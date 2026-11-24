@@ -1,0 +1,15 @@
+{
+  "firestore": [
+    {
+      "database": "database-tps3r",
+      "rules": "firestore.rules",
+      "indexes": "firestore.indexes.json"
+    }
+  ],
+  "storage": [
+    {
+      "bucket": "tps3r-sigap-586c4",
+      "rules": "storage.rules"
+    }
+  ]
+}

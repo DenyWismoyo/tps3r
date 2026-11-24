@@ -1,0 +1,686 @@
+rules_version = '2';
+
+// ===============================================================
+// Cloud Firestore Security Rules — TPS 3R Ekonomi Sirkular
+// ===============================================================
+// Firebase Project : sigap-586c4
+// Named Database   : database-tps3r (Standard Edition, asia-southeast2)
+//
+// ADMIN BOOTSTRAP & SETUP NOTES:
+// Admin authorization (`isAdmin()`) requires an authenticated Firebase Auth
+// user who has EITHER:
+//   1. Custom claim `admin: true` set via Firebase Admin SDK
+//      (`admin.auth().setCustomUserClaims(uid, { admin: true })`), OR
+//   2. An active document at `admins/{uid}` created via Firebase Admin SDK
+//      or Firebase Console (e.g. `{ role: "admin", isActive: true, name: "..." }`).
+// Client writes to `admins/{uid}` are strictly forbidden to prevent privilege
+// escalation even if Email/Password self-registration is enabled in Firebase Auth.
+//
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: admins
+// Document ID: {uid} (Firebase Auth UID)
+// Fields (managed exclusively via Admin SDK / Console):
+//   - role: string (optional, e.g. 'admin')
+//   - name: string (optional)
+//   - isActive: bool (optional, defaults to true if omitted; set false to revoke)
+//   - createdAt: timestamp (optional)
+//
+// Collection: products
+// Document ID: auto-generated or slug-based ID
+// Fields:
+//   - slug: string (required, 1..120 chars, lowercase kebab-case)
+//   - name: string (required, 1..150 chars)
+//   - category: string (required, enum: 'maggot'|'kompos'|'kasgot'|'poc'|'hasil_kebun')
+//   - price: number (required, 0..1000000000)
+//   - unit: string (required, 1..50 chars)
+//   - stockQty: number (required, 0..10000000)
+//   - status: string (required, enum: 'available'|'preorder'|'soldout')
+//   - isActive: bool (required)
+//   - isFeatured: bool (required)
+//   - updatedAt: timestamp (required)
+//   - images: list<string> (optional, max 10 URLs/paths, each <= 2048 chars)
+//   - shortDescription: string (optional, <= 500 chars)
+//   - description: string (optional, <= 5000 chars)
+//   - benefits: list<string> (optional, max 10 items, each <= 300 chars)
+//   - usageGuide: string (optional, <= 3000 chars)
+//   - thumbnailUrl: string (optional, valid URL/path, <= 2048 chars)
+//   - minOrderQty: number (optional, 0..100000)
+//   - weightGrams: number (optional, 0..10000000)
+//   - sortOrder: number (optional, 0..100000)
+//   - badge: string (optional, <= 60 chars)
+//   - createdAt: timestamp (optional, immutable if set)
+//
+// Collection: impact_summary
+// Document ID: 'current' (singleton)
+// Fields:
+//   - totalWasteProcessedKg: number (required, >= 0)
+//   - totalFoodWasteKg: number (required, >= 0)
+//   - totalMaggotHarvestKg: number (required, >= 0)
+//   - totalCompostAndKasgotKg: number (required, >= 0)
+//   - totalPocLiter: number (required, >= 0)
+//   - activeContributorsCount: number (required, >= 0)
+//   - estimatedCo2SavedKg: number (required, >= 0)
+//   - lastUpdatedAt: timestamp (required)
+//   - totalOrganicWasteKg: number (optional, >= 0)
+//   - totalCompostKg: number (optional, >= 0)
+//   - totalKasgotKg: number (optional, >= 0)
+//   - totalLogsCount: number (optional, >= 0)
+//
+// Collection: impact_monthly
+// Document ID: YYYY-MM (e.g. '2026-11')
+// Fields:
+//   - monthKey: string (required, must equal document ID 'YYYY-MM')
+//   - label: string (required, 1..50 chars)
+//   - wasteKg: number (required, >= 0)
+//   - maggotKg: number (required, >= 0)
+//   - compostKg: number (required, >= 0)
+//   - kasgotKg: number (required, >= 0)
+//   - foodWasteKg: number (optional, >= 0)
+//   - organicWasteKg: number (optional, >= 0)
+//   - pocLiter: number (optional, >= 0)
+//   - co2SavedKg: number (optional, >= 0)
+//   - logsCount: number (optional, >= 0)
+//   - updatedAt: timestamp (optional)
+//
+// Collection: site_settings
+// Document ID: 'profile' (singleton)
+// Fields (all optional overrides with strict bounds):
+//   - organizationName: string (<= 150 chars)
+//   - tagline: string (<= 250 chars)
+//   - whatsappNumber: string (8..20 chars)
+//   - phone: string (8..25 chars)
+//   - address: string (<= 500 chars)
+//   - operatingHours: string (<= 200 chars)
+//   - announcementText: string (<= 500 chars)
+//   - announcementActive: bool
+//   - mapEmbedUrl: string (valid URL, <= 2048 chars)
+//   - chairmanName: string (<= 120 chars)
+//   - legalityNumber: string (<= 150 chars)
+//   - updatedAt: timestamp
+//   - updatedBy: string (<= 128 chars)
+//
+// Collection: daily_logs (Admin-only private operational logs)
+// Document ID: auto-generated
+// Fields:
+//   - date: string (required, 'YYYY-MM-DD')
+//   - monthKey: string (required, 'YYYY-MM', prefix of date)
+//   - organicWasteKg: number (required, >= 0)
+//   - foodWasteKg: number (required, >= 0)
+//   - maggotHarvestKg: number (required, >= 0)
+//   - compostProducedKg: number (required, >= 0)
+//   - kasgotProducedKg: number (required, >= 0)
+//   - pocProducedLiter: number (required, >= 0)
+//   - recordedBy: string (required, 1..128 chars, immutable)
+//   - createdAt: timestamp (required, immutable)
+//   - contributorId: string|null (optional, <= 128 chars)
+//   - contributorName: string|null (optional, <= 150 chars)
+//   - earnedPoints: number (optional, >= 0)
+//   - notes: string|null (optional, <= 1000 chars)
+//   - updatedAt: timestamp (optional)
+//
+// Collection: contributors (NO NIK / NO email PII permitted)
+// Document ID: auto-generated
+// Fields:
+//   - memberCode: string (required, 2..30 chars)
+//   - name: string (required, 1..150 chars)
+//   - type: string (required, enum: 'warga'|'warung'|'restoran'|'pasar'|'instansi')
+//   - phoneNormalized: string (required, 8..20 digits e.g. '628123456789')
+//   - totalDepositedKg: number (required, >= 0)
+//   - pointsBalance: number (required, >= 0)
+//   - isActive: bool (required)
+//   - address: string|null (optional, <= 300 chars)
+//   - lastDepositAt: timestamp|null (optional)
+//   - notes: string|null (optional, <= 500 chars)
+//   - createdAt: timestamp (optional, immutable if set)
+//   - updatedAt: timestamp (optional)
+//
+// Collection: partnership_requests
+// Document ID: auto-generated
+// Fields:
+//   - partnerName: string (required, 1..150 chars)
+//   - partnerType: string (required, enum)
+//   - phone: string (required, 8..25 chars)
+//   - address: string (required, 3..500 chars)
+//   - estimatedKgPerWeek: number (required, 0..100000)
+//   - preferredPickupSchedule: string (required, 1..150 chars)
+//   - status: string (required; create: 'baru'; update: 'baru'|'dihubungi'|'aktif'|'ditolak')
+//   - createdAt: timestamp (required, immutable)
+//   - contactName: string|null (optional, <= 150 chars)
+//   - phoneNormalized: string|null (optional, 8..20 digits)
+//   - notes: string|null (optional, <= 1000 chars)
+//   - adminNotes: string|null (admin update only, <= 1000 chars)
+//   - updatedAt: timestamp (admin update only)
+//   - updatedBy: string|null (admin update only, <= 128 chars)
+//
+// Collection: edu_bookings
+// Document ID: auto-generated
+// Fields:
+//   - organizationName: string (required, 1..150 chars)
+//   - contactName: string (required, 1..120 chars)
+//   - phone: string (required, 8..25 chars)
+//   - packageId: string (required, 1..80 chars)
+//   - visitDate: string (required, 'YYYY-MM-DD')
+//   - participantCount: int (required, 1..500)
+//   - status: string (required; create: 'menunggu'; update: 'menunggu'|'dikonfirmasi'|'selesai'|'batal')
+//   - createdAt: timestamp (required, immutable)
+//   - packageName: string|null (optional, <= 150 chars)
+//   - phoneNormalized: string|null (optional, 8..20 digits)
+//   - notes: string|null (optional, <= 1000 chars)
+//   - adminNotes: string|null (admin update only, <= 1000 chars)
+//   - updatedAt: timestamp (admin update only)
+//   - updatedBy: string|null (admin update only, <= 128 chars)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasActiveAdminDoc() {
+      return exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.get('isActive', true) == true;
+    }
+
+    // Trusted authority source: Firebase Auth custom claim `admin: true`
+    // OR an active server-managed document in `admins/{uid}`.
+    function isAdmin() {
+      return isAuthenticated() &&
+        (request.auth.token.admin == true || hasActiveAdminDoc());
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    function isImmutableIfPresent(field) {
+      return !(field in resource.data) ||
+        (field in request.resource.data && request.resource.data[field] == resource.data[field]);
+    }
+
+    function isNonEmptyString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isValidOptionalString(data, field, minLen, maxLen) {
+      return !(field in data) ||
+        data[field] == null ||
+        (data[field] is string && data[field].size() >= minLen && data[field].size() <= maxLen);
+    }
+
+    function isValidNonNegativeNumber(val, maxVal) {
+      return val is number && val >= 0 && val <= maxVal;
+    }
+
+    function isValidOptionalNonNegativeNumber(data, field, maxVal) {
+      return !(field in data) ||
+        data[field] == null ||
+        isValidNonNegativeNumber(data[field], maxVal);
+    }
+
+    function isValidOptionalTimestamp(data, field) {
+      return !(field in data) ||
+        data[field] == null ||
+        data[field] is timestamp;
+    }
+
+    function isValidOptionalBool(data, field) {
+      return !(field in data) ||
+        data[field] is bool;
+    }
+
+    function isValidUrlOrPath(url) {
+      return url is string &&
+        url.size() <= 2048 &&
+        (url.matches("^https://.*") || url.matches("^http://.*") || url.matches("^/.*"));
+    }
+
+    function isValidHttpUrl(url) {
+      return url is string &&
+        url.size() <= 2048 &&
+        (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function isValidSlug(slug) {
+      return isNonEmptyString(slug, 1, 120) &&
+        slug.matches("^[a-z0-9]+(?:-[a-z0-9]+)*$");
+    }
+
+    function isValidMonthKey(val) {
+      return val is string &&
+        val.matches("^\\d{4}-(0[1-9]|1[0-2])$");
+    }
+
+    function isValidDateYmd(val) {
+      return val is string &&
+        val.matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$");
+    }
+
+    function isValidPhoneNormalized(val) {
+      return val is string &&
+        val.matches("^[0-9]{8,20}$");
+    }
+
+    // Allows serverTimestamp() and tolerates minor client clock drift (+/- 10 min)
+    // while blocking arbitrary backdating or future-dating on public submissions.
+    function isRecentTimestamp(ts) {
+      return ts is timestamp &&
+        ts >= request.time - duration.value(10, 'm') &&
+        ts <= request.time + duration.value(10, 'm');
+    }
+
+    // Deep array inspection helpers (bounded up to 10 elements, zero loops)
+    function isValidImageItem(arr, idx) {
+      return arr.size() <= idx || isValidUrlOrPath(arr[idx]);
+    }
+
+    function isValidImageList(arr) {
+      return arr is list &&
+        arr.size() <= 10 &&
+        isValidImageItem(arr, 0) &&
+        isValidImageItem(arr, 1) &&
+        isValidImageItem(arr, 2) &&
+        isValidImageItem(arr, 3) &&
+        isValidImageItem(arr, 4) &&
+        isValidImageItem(arr, 5) &&
+        isValidImageItem(arr, 6) &&
+        isValidImageItem(arr, 7) &&
+        isValidImageItem(arr, 8) &&
+        isValidImageItem(arr, 9);
+    }
+
+    function isValidStringListItem(arr, idx, maxLen) {
+      return arr.size() <= idx || (arr[idx] is string && arr[idx].size() <= maxLen);
+    }
+
+    function isValidStringList10(arr, maxLen) {
+      return arr is list &&
+        arr.size() <= 10 &&
+        isValidStringListItem(arr, 0, maxLen) &&
+        isValidStringListItem(arr, 1, maxLen) &&
+        isValidStringListItem(arr, 2, maxLen) &&
+        isValidStringListItem(arr, 3, maxLen) &&
+        isValidStringListItem(arr, 4, maxLen) &&
+        isValidStringListItem(arr, 5, maxLen) &&
+        isValidStringListItem(arr, 6, maxLen) &&
+        isValidStringListItem(arr, 7, maxLen) &&
+        isValidStringListItem(arr, 8, maxLen) &&
+        isValidStringListItem(arr, 9, maxLen);
+    }
+
+    // ===============================================================
+    // Domain Validators (Invoked on BOTH create and update)
+    // ===============================================================
+
+    function isValidProduct(data) {
+      return hasOnlyAllowedFields([
+          'slug', 'name', 'category', 'price', 'unit', 'stockQty', 'status',
+          'isActive', 'isFeatured', 'updatedAt', 'createdAt', 'images',
+          'shortDescription', 'description', 'benefits', 'usageGuide',
+          'thumbnailUrl', 'minOrderQty', 'weightGrams', 'sortOrder', 'badge'
+        ]) &&
+        hasRequiredFields([
+          'slug', 'name', 'category', 'price', 'unit', 'stockQty',
+          'status', 'isActive', 'isFeatured', 'updatedAt'
+        ]) &&
+        isValidSlug(data.slug) &&
+        isNonEmptyString(data.name, 1, 150) &&
+        data.category in ['maggot', 'kompos', 'kasgot', 'poc', 'hasil_kebun'] &&
+        isValidNonNegativeNumber(data.price, 1000000000) &&
+        isNonEmptyString(data.unit, 1, 50) &&
+        isValidNonNegativeNumber(data.stockQty, 10000000) &&
+        data.status in ['available', 'preorder', 'soldout'] &&
+        data.isActive is bool &&
+        data.isFeatured is bool &&
+        data.updatedAt is timestamp &&
+        isValidOptionalTimestamp(data, 'createdAt') &&
+        (!('images' in data) || isValidImageList(data.images)) &&
+        isValidOptionalString(data, 'shortDescription', 0, 500) &&
+        isValidOptionalString(data, 'description', 0, 5000) &&
+        (!('benefits' in data) || isValidStringList10(data.benefits, 300)) &&
+        isValidOptionalString(data, 'usageGuide', 0, 3000) &&
+        (!('thumbnailUrl' in data) || data.thumbnailUrl == null || data.thumbnailUrl == '' || isValidUrlOrPath(data.thumbnailUrl)) &&
+        isValidOptionalNonNegativeNumber(data, 'minOrderQty', 100000) &&
+        isValidOptionalNonNegativeNumber(data, 'weightGrams', 10000000) &&
+        isValidOptionalNonNegativeNumber(data, 'sortOrder', 100000) &&
+        isValidOptionalString(data, 'badge', 0, 60);
+    }
+
+    function isValidImpactSummary(data) {
+      return hasOnlyAllowedFields([
+          'totalWasteProcessedKg', 'totalFoodWasteKg', 'totalMaggotHarvestKg',
+          'totalCompostAndKasgotKg', 'totalPocLiter', 'activeContributorsCount',
+          'estimatedCo2SavedKg', 'lastUpdatedAt', 'totalOrganicWasteKg',
+          'totalCompostKg', 'totalKasgotKg', 'totalLogsCount'
+        ]) &&
+        hasRequiredFields([
+          'totalWasteProcessedKg', 'totalFoodWasteKg', 'totalMaggotHarvestKg',
+          'totalCompostAndKasgotKg', 'totalPocLiter', 'activeContributorsCount',
+          'estimatedCo2SavedKg', 'lastUpdatedAt'
+        ]) &&
+        isValidNonNegativeNumber(data.totalWasteProcessedKg, 1000000000) &&
+        isValidNonNegativeNumber(data.totalFoodWasteKg, 1000000000) &&
+        isValidNonNegativeNumber(data.totalMaggotHarvestKg, 1000000000) &&
+        isValidNonNegativeNumber(data.totalCompostAndKasgotKg, 1000000000) &&
+        isValidNonNegativeNumber(data.totalPocLiter, 1000000000) &&
+        isValidNonNegativeNumber(data.activeContributorsCount, 10000000) &&
+        isValidNonNegativeNumber(data.estimatedCo2SavedKg, 1000000000) &&
+        data.lastUpdatedAt is timestamp &&
+        isValidOptionalNonNegativeNumber(data, 'totalOrganicWasteKg', 1000000000) &&
+        isValidOptionalNonNegativeNumber(data, 'totalCompostKg', 1000000000) &&
+        isValidOptionalNonNegativeNumber(data, 'totalKasgotKg', 1000000000) &&
+        isValidOptionalNonNegativeNumber(data, 'totalLogsCount', 100000000);
+    }
+
+    function isValidImpactMonthly(data, docId) {
+      return hasOnlyAllowedFields([
+          'monthKey', 'label', 'wasteKg', 'maggotKg', 'compostKg', 'kasgotKg',
+          'foodWasteKg', 'organicWasteKg', 'pocLiter', 'co2SavedKg',
+          'logsCount', 'updatedAt'
+        ]) &&
+        hasRequiredFields([
+          'monthKey', 'label', 'wasteKg', 'maggotKg', 'compostKg', 'kasgotKg'
+        ]) &&
+        isValidMonthKey(data.monthKey) &&
+        data.monthKey == docId &&
+        isNonEmptyString(data.label, 1, 50) &&
+        isValidNonNegativeNumber(data.wasteKg, 100000000) &&
+        isValidNonNegativeNumber(data.maggotKg, 100000000) &&
+        isValidNonNegativeNumber(data.compostKg, 100000000) &&
+        isValidNonNegativeNumber(data.kasgotKg, 100000000) &&
+        isValidOptionalNonNegativeNumber(data, 'foodWasteKg', 100000000) &&
+        isValidOptionalNonNegativeNumber(data, 'organicWasteKg', 100000000) &&
+        isValidOptionalNonNegativeNumber(data, 'pocLiter', 100000000) &&
+        isValidOptionalNonNegativeNumber(data, 'co2SavedKg', 100000000) &&
+        isValidOptionalNonNegativeNumber(data, 'logsCount', 1000000) &&
+        isValidOptionalTimestamp(data, 'updatedAt');
+    }
+
+    function isValidSiteSettings(data) {
+      return hasOnlyAllowedFields([
+          'organizationName', 'tagline', 'whatsappNumber', 'phone', 'address',
+          'operatingHours', 'announcementText', 'announcementActive',
+          'mapEmbedUrl', 'chairmanName', 'legalityNumber', 'updatedAt', 'updatedBy'
+        ]) &&
+        isValidOptionalString(data, 'organizationName', 1, 150) &&
+        isValidOptionalString(data, 'tagline', 0, 250) &&
+        isValidOptionalString(data, 'whatsappNumber', 8, 20) &&
+        isValidOptionalString(data, 'phone', 8, 25) &&
+        isValidOptionalString(data, 'address', 0, 500) &&
+        isValidOptionalString(data, 'operatingHours', 0, 200) &&
+        isValidOptionalString(data, 'announcementText', 0, 500) &&
+        isValidOptionalBool(data, 'announcementActive') &&
+        (!('mapEmbedUrl' in data) || data.mapEmbedUrl == null || data.mapEmbedUrl == '' || isValidHttpUrl(data.mapEmbedUrl)) &&
+        isValidOptionalString(data, 'chairmanName', 0, 120) &&
+        isValidOptionalString(data, 'legalityNumber', 0, 150) &&
+        isValidOptionalTimestamp(data, 'updatedAt') &&
+        isValidOptionalString(data, 'updatedBy', 0, 128);
+    }
+
+    function isValidDailyLog(data) {
+      return hasOnlyAllowedFields([
+          'date', 'monthKey', 'organicWasteKg', 'foodWasteKg', 'maggotHarvestKg',
+          'compostProducedKg', 'kasgotProducedKg', 'pocProducedLiter',
+          'contributorId', 'contributorName', 'earnedPoints', 'notes',
+          'recordedBy', 'createdAt', 'updatedAt'
+        ]) &&
+        hasRequiredFields([
+          'date', 'monthKey', 'organicWasteKg', 'foodWasteKg', 'maggotHarvestKg',
+          'compostProducedKg', 'kasgotProducedKg', 'pocProducedLiter',
+          'recordedBy', 'createdAt'
+        ]) &&
+        isValidDateYmd(data.date) &&
+        isValidMonthKey(data.monthKey) &&
+        data.date.matches("^" + data.monthKey + "-.*") &&
+        isValidNonNegativeNumber(data.organicWasteKg, 1000000) &&
+        isValidNonNegativeNumber(data.foodWasteKg, 1000000) &&
+        isValidNonNegativeNumber(data.maggotHarvestKg, 1000000) &&
+        isValidNonNegativeNumber(data.compostProducedKg, 1000000) &&
+        isValidNonNegativeNumber(data.kasgotProducedKg, 1000000) &&
+        isValidNonNegativeNumber(data.pocProducedLiter, 1000000) &&
+        isNonEmptyString(data.recordedBy, 1, 128) &&
+        data.createdAt is timestamp &&
+        isValidOptionalString(data, 'contributorId', 0, 128) &&
+        isValidOptionalString(data, 'contributorName', 0, 150) &&
+        isValidOptionalNonNegativeNumber(data, 'earnedPoints', 10000000) &&
+        isValidOptionalString(data, 'notes', 0, 1000) &&
+        isValidOptionalTimestamp(data, 'updatedAt');
+    }
+
+    function isValidContributor(data) {
+      // Strictly excludes sensitive PII fields (e.g. nik, email, ktp)
+      return hasOnlyAllowedFields([
+          'memberCode', 'name', 'type', 'phoneNormalized', 'address',
+          'totalDepositedKg', 'pointsBalance', 'isActive', 'lastDepositAt',
+          'notes', 'createdAt', 'updatedAt'
+        ]) &&
+        hasRequiredFields([
+          'memberCode', 'name', 'type', 'phoneNormalized',
+          'totalDepositedKg', 'pointsBalance', 'isActive'
+        ]) &&
+        isNonEmptyString(data.memberCode, 2, 30) &&
+        isNonEmptyString(data.name, 1, 150) &&
+        data.type in ['warga', 'warung', 'restoran', 'pasar', 'instansi'] &&
+        isValidPhoneNormalized(data.phoneNormalized) &&
+        isValidNonNegativeNumber(data.totalDepositedKg, 100000000) &&
+        isValidNonNegativeNumber(data.pointsBalance, 1000000000) &&
+        data.isActive is bool &&
+        isValidOptionalString(data, 'address', 0, 300) &&
+        isValidOptionalTimestamp(data, 'lastDepositAt') &&
+        isValidOptionalString(data, 'notes', 0, 500) &&
+        isValidOptionalTimestamp(data, 'createdAt') &&
+        isValidOptionalTimestamp(data, 'updatedAt');
+    }
+
+    function isValidPartnershipRequestCore(data) {
+      return hasRequiredFields([
+          'partnerName', 'partnerType', 'phone', 'address',
+          'estimatedKgPerWeek', 'preferredPickupSchedule', 'status', 'createdAt'
+        ]) &&
+        isNonEmptyString(data.partnerName, 1, 150) &&
+        data.partnerType in ['warga', 'warung', 'restoran', 'pasar', 'instansi', 'hotel', 'kantin', 'lainnya'] &&
+        isNonEmptyString(data.phone, 8, 25) &&
+        isNonEmptyString(data.address, 3, 500) &&
+        isValidNonNegativeNumber(data.estimatedKgPerWeek, 100000) &&
+        isNonEmptyString(data.preferredPickupSchedule, 1, 150) &&
+        data.createdAt is timestamp &&
+        isValidOptionalString(data, 'contactName', 0, 150) &&
+        (!('phoneNormalized' in data) || data.phoneNormalized == null || isValidPhoneNormalized(data.phoneNormalized)) &&
+        isValidOptionalString(data, 'notes', 0, 1000);
+    }
+
+    function isValidPartnershipRequestCreate(data) {
+      return hasOnlyAllowedFields([
+          'partnerName', 'partnerType', 'phone', 'address',
+          'estimatedKgPerWeek', 'preferredPickupSchedule', 'status', 'createdAt',
+          'contactName', 'phoneNormalized', 'notes'
+        ]) &&
+        isValidPartnershipRequestCore(data) &&
+        data.status == 'baru' &&
+        isRecentTimestamp(data.createdAt);
+    }
+
+    function isValidPartnershipRequestUpdate(data) {
+      return hasOnlyAllowedFields([
+          'partnerName', 'partnerType', 'phone', 'address',
+          'estimatedKgPerWeek', 'preferredPickupSchedule', 'status', 'createdAt',
+          'contactName', 'phoneNormalized', 'notes',
+          'adminNotes', 'updatedAt', 'updatedBy'
+        ]) &&
+        isValidPartnershipRequestCore(data) &&
+        data.status in ['baru', 'dihubungi', 'aktif', 'ditolak'] &&
+        isValidOptionalString(data, 'adminNotes', 0, 1000) &&
+        isValidOptionalTimestamp(data, 'updatedAt') &&
+        isValidOptionalString(data, 'updatedBy', 0, 128);
+    }
+
+    function isValidEduBookingCore(data) {
+      return hasRequiredFields([
+          'organizationName', 'contactName', 'phone', 'packageId',
+          'visitDate', 'participantCount', 'status', 'createdAt'
+        ]) &&
+        isNonEmptyString(data.organizationName, 1, 150) &&
+        isNonEmptyString(data.contactName, 1, 120) &&
+        isNonEmptyString(data.phone, 8, 25) &&
+        isNonEmptyString(data.packageId, 1, 80) &&
+        isValidDateYmd(data.visitDate) &&
+        data.participantCount is int &&
+        data.participantCount >= 1 &&
+        data.participantCount <= 500 &&
+        data.createdAt is timestamp &&
+        isValidOptionalString(data, 'packageName', 0, 150) &&
+        (!('phoneNormalized' in data) || data.phoneNormalized == null || isValidPhoneNormalized(data.phoneNormalized)) &&
+        isValidOptionalString(data, 'notes', 0, 1000);
+    }
+
+    function isValidEduBookingCreate(data) {
+      return hasOnlyAllowedFields([
+          'organizationName', 'contactName', 'phone', 'packageId',
+          'visitDate', 'participantCount', 'status', 'createdAt',
+          'packageName', 'phoneNormalized', 'notes'
+        ]) &&
+        isValidEduBookingCore(data) &&
+        data.status == 'menunggu' &&
+        isRecentTimestamp(data.createdAt);
+    }
+
+    function isValidEduBookingUpdate(data) {
+      return hasOnlyAllowedFields([
+          'organizationName', 'contactName', 'phone', 'packageId',
+          'visitDate', 'participantCount', 'status', 'createdAt',
+          'packageName', 'phoneNormalized', 'notes',
+          'adminNotes', 'updatedAt', 'updatedBy'
+        ]) &&
+        isValidEduBookingCore(data) &&
+        data.status in ['menunggu', 'dikonfirmasi', 'selesai', 'batal'] &&
+        isValidOptionalString(data, 'adminNotes', 0, 1000) &&
+        isValidOptionalTimestamp(data, 'updatedAt') &&
+        isValidOptionalString(data, 'updatedBy', 0, 128);
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // 1. Authorized Admin Registry (Server/Console managed only)
+    match /admins/{uid} {
+      allow get: if isOwner(uid);
+      allow list: if false;
+      allow create, update, delete: if false;
+    }
+
+    // 2. Public Product Catalog & Live Stock
+    match /products/{docId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidProduct(request.resource.data);
+      allow update: if isAdmin() &&
+        isValidProduct(request.resource.data) &&
+        isImmutableIfPresent('createdAt');
+      allow delete: if isAdmin();
+    }
+
+    // 3. Public Aggregate Impact Summary (Singleton: 'current')
+    match /impact_summary/{docId} {
+      allow read: if true;
+      allow create: if isAdmin() &&
+        docId == 'current' &&
+        isValidImpactSummary(request.resource.data);
+      allow update: if isAdmin() &&
+        docId == 'current' &&
+        isValidImpactSummary(request.resource.data);
+      allow delete: if false;
+    }
+
+    // 4. Public Monthly Impact Aggregates (Doc ID: 'YYYY-MM')
+    match /impact_monthly/{docId} {
+      allow read: if true;
+      allow create: if isAdmin() &&
+        isValidMonthKey(docId) &&
+        isValidImpactMonthly(request.resource.data, docId);
+      allow update: if isAdmin() &&
+        isValidMonthKey(docId) &&
+        isValidImpactMonthly(request.resource.data, docId);
+      allow delete: if isAdmin();
+    }
+
+    // 5. Public Site Settings Override (Singleton: 'profile')
+    match /site_settings/{docId} {
+      allow read: if true;
+      allow create: if isAdmin() &&
+        docId == 'profile' &&
+        isValidSiteSettings(request.resource.data);
+      allow update: if isAdmin() &&
+        docId == 'profile' &&
+        isValidSiteSettings(request.resource.data);
+      allow delete: if false;
+    }
+
+    // 6. Private Daily Operational Field Logs (Admin-only)
+    match /daily_logs/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && isValidDailyLog(request.resource.data);
+      allow update: if isAdmin() &&
+        isValidDailyLog(request.resource.data) &&
+        areImmutableFieldsUnchanged(['createdAt', 'recordedBy']);
+      allow delete: if isAdmin();
+    }
+
+    // 7. Contributors & Points Lookup (Anti-scraping bounded list for public)
+    match /contributors/{docId} {
+      allow get: if true;
+      allow list: if isAdmin() ||
+        (request.query.limit != null && request.query.limit <= 5);
+      allow create: if isAdmin() && isValidContributor(request.resource.data);
+      allow update: if isAdmin() &&
+        isValidContributor(request.resource.data) &&
+        isImmutableIfPresent('createdAt');
+      allow delete: if isAdmin();
+    }
+
+    // 8. Partnership / Food-Waste Pickup Requests (Public create, Admin inbox)
+    match /partnership_requests/{docId} {
+      allow read: if isAdmin();
+      allow create: if isValidPartnershipRequestCreate(request.resource.data);
+      allow update: if isAdmin() &&
+        isValidPartnershipRequestUpdate(request.resource.data) &&
+        areImmutableFieldsUnchanged(['createdAt']);
+      allow delete: if isAdmin();
+    }
+
+    // 9. Eduwisata & Study Visit Bookings (Public create, Admin inbox)
+    match /edu_bookings/{docId} {
+      allow read: if isAdmin();
+      allow create: if isValidEduBookingCreate(request.resource.data);
+      allow update: if isAdmin() &&
+        isValidEduBookingUpdate(request.resource.data) &&
+        areImmutableFieldsUnchanged(['createdAt']);
+      allow delete: if isAdmin();
+    }
+
+    // 10. Explicit Default Deny for all other paths & subcollections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
