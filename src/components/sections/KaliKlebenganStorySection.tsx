@@ -32,7 +32,7 @@ export function KaliKlebenganStorySection({
           {KALI_KLEBENGAN_TIMELINE.map((step) => (
             <article key={step.era} className="timeline-step">
               <span className="timeline-step__era">{step.era}</span>
-              <h4>{step.title}</h4>
+              <h3>{step.title}</h3>
               <p className="text-sm text-muted">{step.description}</p>
             </article>
           ))}

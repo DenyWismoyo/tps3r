@@ -14,7 +14,7 @@ export function PointsRewardCatalog() {
             <Badge tone="organic">{reward.categoryBadge}</Badge>
             <Award size={18} className="text-accent" aria-hidden="true" />
           </div>
-          <h4>{reward.title}</h4>
+          <h3>{reward.title}</h3>
           <div className="reward-card__points">
             {formatNumber(reward.pointsCost, 0)} <span className="text-xs text-muted">poin</span>
           </div>

@@ -101,7 +101,7 @@ export function WasteSortingGuide() {
                   {WASTE_SORTING_CATEGORY_LABELS[item.category]}
                 </Badge>
               </div>
-              <h4>{item.name}</h4>
+              <h3>{item.name}</h3>
               <p className="text-sm text-muted">
                 <strong>Contoh:</strong> {item.examples}
               </p>

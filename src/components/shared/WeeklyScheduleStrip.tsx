@@ -14,7 +14,7 @@ export function WeeklyScheduleStrip() {
               {item.timeRange}
             </span>
           </div>
-          <h4>{item.activity}</h4>
+          <h3>{item.activity}</h3>
           <p className="text-xs text-muted">{item.note}</p>
         </article>
       ))}

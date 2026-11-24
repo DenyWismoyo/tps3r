@@ -55,7 +55,7 @@ export function HeroSection({ summary }: HeroSectionProps) {
           <div className="card card--elevated card--tinted">
             <div className="card__body stack stack--sm">
               <span className="badge badge--organic">Dampak Real-Time TPS 3R</span>
-              <h3>Kinerja Ekonomi Sirkular Kami</h3>
+              <h2 className="hero__kpi-title">Kinerja Ekonomi Sirkular Kami</h2>
               <p className="text-sm text-muted">
                 Seluruh angka diperbarui langsung dari catatan timbangan harian pengurus di
                 lapangan.

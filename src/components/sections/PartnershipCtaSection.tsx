@@ -25,7 +25,7 @@ export function PartnershipCtaSection() {
           ))}
         </div>
 
-        <div className="cluster section--compact">
+        <div className="cluster cta-row-top">
           <Link href="/kemitraan" className="btn btn--accent btn--lg">
             <Handshake size={18} />
             <span>Daftar Mitra Setor Sisa Makanan</span>

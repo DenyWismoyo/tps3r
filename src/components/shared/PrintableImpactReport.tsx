@@ -52,8 +52,8 @@ export function PrintableImpactReport({
             <Download size={17} />
             <span>Export CSV (DLH/Excel)</span>
           </Button>
-          <Button variant="primary" size="lg" onClick={() => window.print()}>
-            <Printer size={18} />
+          <Button variant="primary" onClick={() => window.print()}>
+            <Printer size={17} />
             <span>Cetak Laporan A4</span>
           </Button>
         </div>

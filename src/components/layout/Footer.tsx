@@ -31,8 +31,8 @@ export function Footer() {
               <strong>{SITE_CONFIG.organizationName}</strong>
             </div>
             <p className="text-sm">{SITE_CONFIG.tagline}</p>
-            <p className="text-xs cluster">
-              <ShieldCheck size={16} aria-hidden="true" />
+            <p className="footer__meta-row">
+              <ShieldCheck size={15} aria-hidden="true" />
               <span>{SITE_CONFIG.legalityNumber}</span>
             </p>
           </div>
@@ -60,13 +60,13 @@ export function Footer() {
           </div>
 
           <div className="stack stack--sm">
-            <h4>Lokasi & Kontak</h4>
-            <p className="text-sm cluster">
-              <MapPin size={16} aria-hidden="true" />
+            <h4>Lokasi &amp; Kontak</h4>
+            <p className="footer__meta-row">
+              <MapPin size={15} aria-hidden="true" />
               <span>{SITE_CONFIG.address}</span>
             </p>
-            <p className="text-sm cluster">
-              <Clock size={16} aria-hidden="true" />
+            <p className="footer__meta-row">
+              <Clock size={15} aria-hidden="true" />
               <span>{SITE_CONFIG.operatingHours}</span>
             </p>
             <a
