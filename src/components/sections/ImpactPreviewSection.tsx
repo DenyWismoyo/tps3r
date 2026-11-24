@@ -5,6 +5,7 @@ import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Card, CardBody } from '@/components/ui/Card';
 import { ImpactMetricsGrid } from '@/components/shared/ImpactMetricsGrid';
+import { ImpactEquivalencyStrip } from '@/components/shared/ImpactEquivalencyStrip';
 import { ImpactTrendChart } from '@/components/shared/ImpactTrendChart';
 
 export interface ImpactPreviewSectionProps {
@@ -36,6 +37,7 @@ export function ImpactPreviewSection({
             summary={summary}
             periodLabel="Ringkasan Akumulasi Dampak Lingkungan"
           />
+          <ImpactEquivalencyStrip summary={summary} />
           <Card>
             <CardBody>
               <ImpactTrendChart monthlyData={monthlyData} metric="waste" height={230} />

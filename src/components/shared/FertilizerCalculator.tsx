@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Bug, ShoppingBag, Sprout } from 'lucide-react';
+import Link from 'next/link';
+import { Award, Bug, Handshake, ShoppingBag, Sprout } from 'lucide-react';
 import {
   CALCULATOR_PRICES,
   CROP_FORMULAS,
@@ -12,6 +13,7 @@ import {
   type LandUnitMode,
   type LivestockType,
 } from '@/config/calculator';
+import { SITE_CONFIG } from '@/config/site';
 import { formatNumber, formatRupiah } from '@/utils/format';
 import { buildCalculatorWhatsAppMessage } from '@/utils/whatsapp';
 import { useCart } from '@/hooks/useCart';
@@ -21,7 +23,7 @@ import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { WhatsAppButton } from './WhatsAppButton';
 
-type CalculatorMode = 'pupuk' | 'maggot';
+type CalculatorMode = 'pupuk' | 'maggot' | 'poin';
 
 export interface FertilizerCalculatorProps {
   defaultMode?: CalculatorMode;
@@ -43,6 +45,9 @@ export function FertilizerCalculator({
   const [livestockId, setLivestockId] = useState<LivestockType>('lele');
   const [headCount, setHeadCount] = useState('500');
 
+  const [dailyWasteKg, setDailyWasteKg] = useState('3');
+  const [daysPerMonth, setDaysPerMonth] = useState('24');
+
   const { addCustomItem, openDrawer } = useCart();
   const { showToast } = useToast();
 
@@ -56,6 +61,15 @@ export function FertilizerCalculator({
     [livestockId, headCount]
   );
 
+  const pointsSimulation = useMemo(() => {
+    const kgMonth = Math.max(0, (Number(dailyWasteKg) || 0) * (Number(daysPerMonth) || 0));
+    const pointsMonth = Math.round(kgMonth * SITE_CONFIG.pointsPerKgWaste);
+    const co2Month = Math.round(kgMonth * SITE_CONFIG.co2FactorPerKgOrganic * 10) / 10;
+    const sayurPacks = Math.floor(pointsMonth / 150);
+    const kasgotSacks = Math.floor(pointsMonth / 350);
+    return { kgMonth, pointsMonth, co2Month, sayurPacks, kasgotSacks };
+  }, [dailyWasteKg, daysPerMonth]);
+
   const selectedCropLabel =
     CROP_FORMULAS.find((c) => c.id === cropId)?.label ?? 'Tanaman';
   const selectedLivestockLabel =
@@ -67,8 +81,8 @@ export function FertilizerCalculator({
       addCustomItem({
         productId: 'kasgot-halus-10kg',
         slug: 'kasgot-halus-10kg',
-        name: 'Kasgot (Bekas Maggot) Ayak Halus 10 kg',
-        price: CALCULATOR_PRICES.kasgotPerKg * 10 - 3000,
+        name: 'Kasgot (Bekas Maggot) Ayak Halus Klebengan 10 kg',
+        price: 30000,
         unit: 'karung 10kg',
         qty: kasgotSacks,
       });
@@ -78,7 +92,7 @@ export function FertilizerCalculator({
       addCustomItem({
         productId: 'maggot-bsf-segar',
         slug: 'maggot-bsf-segar',
-        name: 'Maggot BSF Segar (Pakan Hidup)',
+        name: 'Maggot BSF Segar Klebengan (Pakan Hidup)',
         price: CALCULATOR_PRICES.freshMaggotPerKg,
         unit: 'kg',
         qty: freshKg,
@@ -96,12 +110,19 @@ export function FertilizerCalculator({
           `Rekomendasi: Kompos ${fertResult.compostKg} kg, Kasgot ${fertResult.kasgotKg} kg, POC ${fertResult.pocLiter} L`,
           `Estimasi Biaya: ${formatRupiah(fertResult.estimatedCostRp)}`,
         ])
-      : buildCalculatorWhatsAppMessage([
-          `Kebutuhan Pakan Maggot BSF untuk ${selectedLivestockLabel}`,
-          `Populasi: ${headCount || 0} ekor`,
-          `Maggot Segar: ${maggotResult.freshKgPerDay} kg/hari (${maggotResult.freshKgPerWeek} kg/minggu)`,
-          `Maggot Kering: ${maggotResult.dryKgPerDay} kg/hari (${maggotResult.dryKgPerWeek} kg/minggu)`,
-        ]);
+      : mode === 'maggot'
+        ? buildCalculatorWhatsAppMessage([
+            `Kebutuhan Pakan Maggot BSF untuk ${selectedLivestockLabel}`,
+            `Populasi: ${headCount || 0} ekor`,
+            `Maggot Segar: ${maggotResult.freshKgPerDay} kg/hari (${maggotResult.freshKgPerWeek} kg/minggu)`,
+            `Maggot Kering: ${maggotResult.dryKgPerDay} kg/hari (${maggotResult.dryKgPerWeek} kg/minggu)`,
+          ])
+        : buildCalculatorWhatsAppMessage([
+            `Simulasi Mitra Penyetor Sampah Organik`,
+            `Perkiraan setor: ${pointsSimulation.kgMonth} kg/bulan`,
+            `Estimasi poin: ${pointsSimulation.pointsMonth} poin/bulan`,
+            `Ingin mendaftar sebagai mitra penyetor TPS 3R Abdi Dalem Klebengan.`,
+          ]);
 
   return (
     <div className="calculator-box stack">
@@ -112,6 +133,7 @@ export function FertilizerCalculator({
         items={[
           { key: 'pupuk', label: 'Pupuk Lahan & Pot', icon: <Sprout size={17} /> },
           { key: 'maggot', label: 'Pakan Maggot BSF', icon: <Bug size={17} /> },
+          { key: 'poin', label: 'Simulasi Poin Setor', icon: <Award size={17} /> },
         ]}
       />
 
@@ -182,7 +204,7 @@ export function FertilizerCalculator({
             </div>
           </div>
         </div>
-      ) : (
+      ) : mode === 'maggot' ? (
         <div className="split-aside">
           <div className="stack">
             <SelectField
@@ -235,6 +257,68 @@ export function FertilizerCalculator({
                 <span>Masuk Keranjang</span>
               </Button>
               <WhatsAppButton message={waMessage} label="Pesan via WA" block />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="split-aside">
+          <div className="stack">
+            <InputField
+              id="calc-daily-waste"
+              label="Perkiraan Sisa Makanan / Organik per Hari (kg)"
+              type="number"
+              inputMode="decimal"
+              step="0.5"
+              min={0.5}
+              value={dailyWasteKg}
+              onChange={(e) => setDailyWasteKg(e.target.value)}
+              hint="Rumah tangga umumnya 1–2 kg/hari; warung makan 5–20 kg/hari."
+            />
+            <InputField
+              id="calc-days-month"
+              label="Hari Operasional / Setor per Bulan"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={31}
+              value={daysPerMonth}
+              onChange={(e) => setDaysPerMonth(e.target.value)}
+            />
+          </div>
+
+          <div className="calculator-result stack stack--sm">
+            <span className="badge badge--organic">Simulasi Tabungan Poin &amp; Dampak</span>
+            <div className="grid-3">
+              <div>
+                <div className="text-xs text-muted">Sampah Teralihkan</div>
+                <div className="calculator-result__metric">
+                  {formatNumber(pointsSimulation.kgMonth, 0)} kg
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted">Poin / Bulan</div>
+                <div className="calculator-result__metric">
+                  {formatNumber(pointsSimulation.pointsMonth, 0)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted">CO2e Dicegah</div>
+                <div className="calculator-result__metric">
+                  {formatNumber(pointsSimulation.co2Month, 1)} kg
+                </div>
+              </div>
+            </div>
+            <p className="text-sm">
+              Setara <strong>{pointsSimulation.sayurPacks} paket sayur tayurdapot</strong> atau{' '}
+              <strong>{pointsSimulation.kasgotSacks} karung Kasgot 10 kg</strong> gratis setiap
+              bulan!
+            </p>
+            <div className="grid-2">
+              <Link href="/kemitraan" className="btn btn--primary btn--block">
+                <Handshake size={17} />
+                <span>Daftar Mitra Sekarang</span>
+              </Link>
+              <WhatsAppButton message={waMessage} label="Tanya Jemput WA" block />
             </div>
           </div>
         </div>

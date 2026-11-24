@@ -6,10 +6,11 @@ export interface NavItem {
 
 export const PUBLIC_NAV_ITEMS: readonly NavItem[] = [
   { label: 'Beranda', href: '/' },
-  { label: 'Katalog Produk', href: '/katalog' },
-  { label: 'Kalkulator Takaran', href: '/kalkulator' },
-  { label: 'Transparansi Dampak', href: '/dampak' },
-  { label: 'Kemitraan & Poin', href: '/kemitraan' },
+  { label: 'Katalog', href: '/katalog' },
+  { label: 'Kalkulator', href: '/kalkulator' },
+  { label: 'Panduan', href: '/panduan' },
+  { label: 'Dampak', href: '/dampak' },
+  { label: 'Kemitraan', href: '/kemitraan' },
   { label: 'Eduwisata', href: '/eduwisata' },
 ] as const;
 
@@ -23,9 +24,10 @@ export const ADMIN_NAV_ITEMS: readonly NavItem[] = [
 
 export const FOOTER_QUICK_LINKS: readonly NavItem[] = [
   { label: 'Katalog Maggot & Pupuk', href: '/katalog' },
-  { label: 'Kalkulator Pupuk & Pakan', href: '/kalkulator' },
+  { label: 'Kalkulator Pupuk, Pakan & Poin', href: '/kalkulator' },
+  { label: 'Panduan Pilah Sampah & FAQ', href: '/panduan' },
   { label: 'Laporan Dampak DLH/CSR', href: '/dampak' },
-  { label: 'Daftar Mitra Setor Sampah', href: '/kemitraan' },
+  { label: 'Daftar Mitra & Cek Poin', href: '/kemitraan' },
   { label: 'Booking Studi Banding', href: '/eduwisata' },
   { label: 'Portal Pengurus TPS 3R', href: '/admin' },
 ] as const;

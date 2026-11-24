@@ -6,6 +6,7 @@ import {
   updateDoc,
   query,
   where,
+  orderBy,
   limit,
   runTransaction,
   serverTimestamp,
@@ -85,6 +86,41 @@ export async function lookupContributor(queryText: string): Promise<Contributor 
   }
 
   return null;
+}
+
+export interface PublicTopContributor {
+  id: string;
+  memberCode: string;
+  name: string;
+  type: ContributorType;
+  totalDepositedKg: number;
+}
+
+/**
+ * Mengambil 5 mitra penyetor teraktif untuk Papan Apresiasi publik (limit <= 5 sesuai firestore.rules).
+ * Hanya mengembalikan data non-PII (tanpa nomor HP & tanpa alamat).
+ */
+export async function getTopContributorsPublic(): Promise<PublicTopContributor[]> {
+  try {
+    const q = query(
+      collection(db, CONTRIBUTORS_COL),
+      orderBy('totalDepositedKg', 'desc'),
+      limit(5)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        memberCode: String(data.memberCode ?? ''),
+        name: String(data.name ?? ''),
+        type: (data.type as ContributorType) ?? 'warga',
+        totalDepositedKg: Number(data.totalDepositedKg ?? 0),
+      };
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getAllContributorsAdmin(): Promise<Contributor[]> {

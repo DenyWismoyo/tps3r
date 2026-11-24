@@ -6,8 +6,10 @@ import { HeroSection } from '@/components/sections/HeroSection';
 import { CircularFlowSection } from '@/components/sections/CircularFlowSection';
 import { FeaturedProductsSection } from '@/components/sections/FeaturedProductsSection';
 import { ImpactPreviewSection } from '@/components/sections/ImpactPreviewSection';
+import { KaliKlebenganStorySection } from '@/components/sections/KaliKlebenganStorySection';
 import { PartnershipCtaSection } from '@/components/sections/PartnershipCtaSection';
 import { EduwisataPreviewSection } from '@/components/sections/EduwisataPreviewSection';
+import { TestimonialsSection } from '@/components/sections/TestimonialsSection';
 import { ProfileLocationSection } from '@/components/sections/ProfileLocationSection';
 
 export const revalidate = 60;
@@ -30,8 +32,10 @@ export default async function HomePage() {
       <CircularFlowSection />
       <FeaturedProductsSection products={featuredProducts} />
       <ImpactPreviewSection summary={summary} monthlyData={monthlyData} />
+      <KaliKlebenganStorySection />
       <PartnershipCtaSection />
       <EduwisataPreviewSection />
+      <TestimonialsSection />
       <ProfileLocationSection />
     </main>
   );
