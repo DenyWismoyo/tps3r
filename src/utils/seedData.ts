@@ -170,14 +170,13 @@ const SAMPLE_PRODUCTS = [
   },
 ] as const;
 
-// Skala realistis pengolahan sampah organik TPS 3R di Kadipiro (mengurangi beban TPA Putri Cempo)
 const SAMPLE_MONTHLY = [
-  { monthKey: '2026-06', label: 'Jun 2026', wasteKg: 3150, foodWasteKg: 1420, organicWasteKg: 1730, maggotKg: 325, compostKg: 820, kasgotKg: 430, pocLiter: 115, logsCount: 25 },
-  { monthKey: '2026-07', label: 'Jul 2026', wasteKg: 3480, foodWasteKg: 1590, organicWasteKg: 1890, maggotKg: 368, compostKg: 895, kasgotKg: 475, pocLiter: 128, logsCount: 26 },
-  { monthKey: '2026-08', label: 'Agu 2026', wasteKg: 3820, foodWasteKg: 1760, organicWasteKg: 2060, maggotKg: 412, compostKg: 980, kasgotKg: 525, pocLiter: 142, logsCount: 26 },
-  { monthKey: '2026-09', label: 'Sep 2026', wasteKg: 4150, foodWasteKg: 1940, organicWasteKg: 2210, maggotKg: 455, compostKg: 1060, kasgotKg: 580, pocLiter: 155, logsCount: 25 },
-  { monthKey: '2026-10', label: 'Okt 2026', wasteKg: 4520, foodWasteKg: 2150, organicWasteKg: 2370, maggotKg: 505, compostKg: 1150, kasgotKg: 640, pocLiter: 170, logsCount: 27 },
-  { monthKey: '2026-11', label: 'Nov 2026', wasteKg: 4280, foodWasteKg: 2040, organicWasteKg: 2240, maggotKg: 482, compostKg: 1090, kasgotKg: 610, pocLiter: 162, logsCount: 22 },
+  { monthKey: '2026-06', label: 'Jun 2026', wasteKg: 3150, foodWasteKg: 1420, organicWasteKg: 1730, inorganicKg: 420, residueKg: 480, maggotKg: 325, compostKg: 820, kasgotKg: 430, pocLiter: 115, logsCount: 25 },
+  { monthKey: '2026-07', label: 'Jul 2026', wasteKg: 3480, foodWasteKg: 1590, organicWasteKg: 1890, inorganicKg: 460, residueKg: 460, maggotKg: 368, compostKg: 895, kasgotKg: 475, pocLiter: 128, logsCount: 26 },
+  { monthKey: '2026-08', label: 'Agu 2026', wasteKg: 3820, foodWasteKg: 1760, organicWasteKg: 2060, inorganicKg: 510, residueKg: 430, maggotKg: 412, compostKg: 980, kasgotKg: 525, pocLiter: 142, logsCount: 26 },
+  { monthKey: '2026-09', label: 'Sep 2026', wasteKg: 4150, foodWasteKg: 1940, organicWasteKg: 2210, inorganicKg: 545, residueKg: 410, maggotKg: 455, compostKg: 1060, kasgotKg: 580, pocLiter: 155, logsCount: 25 },
+  { monthKey: '2026-10', label: 'Okt 2026', wasteKg: 4520, foodWasteKg: 2150, organicWasteKg: 2370, inorganicKg: 590, residueKg: 390, maggotKg: 505, compostKg: 1150, kasgotKg: 640, pocLiter: 170, logsCount: 27 },
+  { monthKey: '2026-11', label: 'Nov 2026', wasteKg: 4280, foodWasteKg: 2040, organicWasteKg: 2240, inorganicKg: 560, residueKg: 365, maggotKg: 482, compostKg: 1090, kasgotKg: 610, pocLiter: 162, logsCount: 22 },
 ] as const;
 
 const SAMPLE_CONTRIBUTORS = [
@@ -188,6 +187,7 @@ const SAMPLE_CONTRIBUTORS = [
     type: 'warung',
     phoneNormalized: '628123450001',
     address: 'Jl. Lettu Sumarto, Ngipang, Kadipiro, Banjarsari, Surakarta',
+    pickupDays: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
     totalDepositedKg: 640,
     pointsBalance: 2450,
     isActive: true,
@@ -200,6 +200,7 @@ const SAMPLE_CONTRIBUTORS = [
     type: 'warga',
     phoneNormalized: '628123450002',
     address: 'Kampung Ngipang RT 01/RW 17, Kel. Kadipiro, Surakarta',
+    pickupDays: ['Senin', 'Rabu', 'Jumat'],
     totalDepositedKg: 1120,
     pointsBalance: 3800,
     isActive: true,
@@ -212,6 +213,7 @@ const SAMPLE_CONTRIBUTORS = [
     type: 'pasar',
     phoneNormalized: '628123450003',
     address: 'Area Los Sayur Pasar Kadipiro, Kec. Banjarsari, Surakarta',
+    pickupDays: ['Selasa', 'Kamis', 'Sabtu'],
     totalDepositedKg: 980,
     pointsBalance: 3150,
     isActive: true,
@@ -224,6 +226,7 @@ const SAMPLE_CONTRIBUTORS = [
     type: 'restoran',
     phoneNormalized: '628123450004',
     address: 'Jl. Sumpah Pemuda, Kadipiro, Banjarsari, Surakarta',
+    pickupDays: ['Senin', 'Kamis', 'Sabtu'],
     totalDepositedKg: 745,
     pointsBalance: 2600,
     isActive: true,
@@ -236,6 +239,7 @@ const SAMPLE_CONTRIBUTORS = [
     type: 'instansi',
     phoneNormalized: '628123450005',
     address: 'Balai RW 17 Kampung Ngipang, Kel. Kadipiro, Surakarta',
+    pickupDays: ['Selasa', 'Jumat'],
     totalDepositedKg: 515,
     pointsBalance: 1920,
     isActive: true,
@@ -250,13 +254,15 @@ const SAMPLE_DAILY_LOGS = [
     monthKey: '2026-11',
     organicWasteKg: 98,
     foodWasteKg: 86,
+    inorganicWasteKg: 24,
+    residueToTpaKg: 14,
     maggotHarvestKg: 21.5,
     compostProducedKg: 50,
     kasgotProducedKg: 28,
     pocProducedLiter: 8,
     contributorId: 'contrib-001',
     contributorName: 'Warung Makan Mbak Sri (Selatan RSUD Ngipang)',
-    earnedPoints: 1840,
+    earnedPoints: 2080,
     notes: 'Penimbangan sore rutin + panen biopond 1 & 2 Kali Klebengan.',
     recordedBy: 'admin@tps3r.id',
   },
@@ -266,14 +272,101 @@ const SAMPLE_DAILY_LOGS = [
     monthKey: '2026-11',
     organicWasteKg: 112,
     foodWasteKg: 94,
+    inorganicWasteKg: 30,
+    residueToTpaKg: 12,
     maggotHarvestKg: 24,
     compostProducedKg: 60,
     kasgotProducedKg: 32,
     pocProducedLiter: 10,
     contributorId: 'contrib-003',
     contributorName: 'Kios Sayur Pak Parman (Pasar Kadipiro)',
-    earnedPoints: 2060,
+    earnedPoints: 2360,
     notes: 'Setoran sayur Pasar Kadipiro & pengayakan kasgot karung 10kg.',
+    recordedBy: 'admin@tps3r.id',
+  },
+] as const;
+
+const SAMPLE_BATCHES = [
+  {
+    id: 'seed-batch-bp01',
+    code: 'BP-01',
+    type: 'biopond_maggot',
+    startDate: '2026-11-10',
+    targetHarvestDate: '2026-11-26',
+    estimatedInputKg: 120,
+    status: 'aktif',
+    notes: 'Pakan sisa makanan Warung RSUD Ngipang & Pasar Kadipiro.',
+    recordedBy: 'admin@tps3r.id',
+  },
+  {
+    id: 'seed-batch-bp02',
+    code: 'BP-02',
+    type: 'biopond_maggot',
+    startDate: '2026-11-16',
+    targetHarvestDate: '2026-12-02',
+    estimatedInputKg: 95,
+    status: 'aktif',
+    notes: 'Bibit 15g telur BSF — pertumbuhan larva sangat merata.',
+    recordedBy: 'admin@tps3r.id',
+  },
+  {
+    id: 'seed-batch-km01',
+    code: 'KM-01',
+    type: 'bedeng_kompos',
+    startDate: '2026-10-25',
+    targetHarvestDate: '2026-11-29',
+    estimatedInputKg: 450,
+    status: 'aktif',
+    notes: 'Campuran serasah daun Kali Klebengan + kohe kambing RW 17.',
+    recordedBy: 'admin@tps3r.id',
+  },
+] as const;
+
+const SAMPLE_CASH_TX = [
+  {
+    id: 'seed-cash-1',
+    date: '2026-11-24',
+    monthKey: '2026-11',
+    type: 'pemasukan',
+    category: 'penjualan_maggot',
+    amount: 270000,
+    description: 'Penjualan 30 kg Maggot BSF Segar ke peternak lele Banjarsari',
+    productId: 'maggot-bsf-segar',
+    productName: 'Maggot BSF Segar Klebengan (Pakan Hidup)',
+    qtySold: 30,
+    recordedBy: 'admin@tps3r.id',
+  },
+  {
+    id: 'seed-cash-2',
+    date: '2026-11-23',
+    monthKey: '2026-11',
+    type: 'pemasukan',
+    category: 'penjualan_pupuk',
+    amount: 300000,
+    description: 'Penjualan 10 karung Kasgot 10kg untuk urban farming Kadipiro',
+    productId: 'kasgot-halus-10kg',
+    productName: 'Kasgot (Bekas Maggot) Ayak Halus Klebengan 10 kg',
+    qtySold: 10,
+    recordedBy: 'admin@tps3r.id',
+  },
+  {
+    id: 'seed-cash-3',
+    date: '2026-11-22',
+    monthKey: '2026-11',
+    type: 'pengeluaran',
+    category: 'bbm_jemput',
+    amount: 75000,
+    description: 'BBM motor roda 3 operasional jemput sisa makanan 1 minggu',
+    recordedBy: 'admin@tps3r.id',
+  },
+  {
+    id: 'seed-cash-4',
+    date: '2026-11-21',
+    monthKey: '2026-11',
+    type: 'pengeluaran',
+    category: 'kemasan_karung',
+    amount: 110000,
+    description: 'Beli 100 karung kompos/kasgot & botol kemasan POC 1L',
     recordedBy: 'admin@tps3r.id',
   },
 ] as const;
@@ -341,24 +434,19 @@ async function main() {
   const now = Timestamp.now();
 
   console.log(
-    `Menyemai data TPS 3R Abdi Dalem Klebengan Kadipiro ke Firestore: ${ADMIN_DATABASE_ID}...`
+    `Menyemai data v2 TPS 3R Abdi Dalem Klebengan Kadipiro ke Firestore: ${ADMIN_DATABASE_ID}...`
   );
 
-  // 1. Produk (replace penuh agar tidak ada teks lama tersisa)
   for (const product of SAMPLE_PRODUCTS) {
     const { id, ...rest } = product;
-    await db.collection('products').doc(id).set({
-      ...rest,
-      createdAt: now,
-      updatedAt: now,
-    });
+    await db.collection('products').doc(id).set({ ...rest, createdAt: now, updatedAt: now });
   }
-  console.log(`✓ ${SAMPLE_PRODUCTS.length} produk Abdi Dalem Klebengan selesai disemai.`);
 
-  // 2. Impact Monthly & Impact Summary
   let totalWaste = 0;
   let totalFood = 0;
   let totalOrganic = 0;
+  let totalInorganic = 0;
+  let totalResidue = 0;
   let totalMaggot = 0;
   let totalCompost = 0;
   let totalKasgot = 0;
@@ -370,6 +458,8 @@ async function main() {
     totalWaste += m.wasteKg;
     totalFood += m.foodWasteKg;
     totalOrganic += m.organicWasteKg;
+    totalInorganic += m.inorganicKg;
+    totalResidue += m.residueKg;
     totalMaggot += m.maggotKg;
     totalCompost += m.compostKg;
     totalKasgot += m.kasgotKg;
@@ -387,6 +477,8 @@ async function main() {
     totalWasteProcessedKg: totalWaste,
     totalFoodWasteKg: totalFood,
     totalOrganicWasteKg: totalOrganic,
+    totalInorganicWasteKg: totalInorganic,
+    totalResidueToTpaKg: totalResidue,
     totalMaggotHarvestKg: totalMaggot,
     totalCompostAndKasgotKg: totalCompost + totalKasgot,
     totalCompostKg: totalCompost,
@@ -397,9 +489,7 @@ async function main() {
     totalLogsCount: totalLogs,
     lastUpdatedAt: now,
   });
-  console.log(`✓ 6 bulan impact_monthly & impact_summary/current Kadipiro selesai disemai.`);
 
-  // 3. Contributors (replace penuh)
   for (const contributor of SAMPLE_CONTRIBUTORS) {
     const { id, ...rest } = contributor;
     await db.collection('contributors').doc(id).set({
@@ -409,38 +499,32 @@ async function main() {
       updatedAt: now,
     });
   }
-  console.log(`✓ ${SAMPLE_CONTRIBUTORS.length} mitra penyetor ADK-001..ADK-005 selesai disemai.`);
 
-  // 4. Daily Logs contoh (agar tabel /admin langsung terisi realistis)
   for (const log of SAMPLE_DAILY_LOGS) {
     const { id, ...rest } = log;
-    await db.collection('daily_logs').doc(id).set({
-      ...rest,
-      createdAt: now,
-    });
+    await db.collection('daily_logs').doc(id).set({ ...rest, createdAt: now });
   }
-  console.log(`✓ ${SAMPLE_DAILY_LOGS.length} log harian contoh selesai disemai.`);
 
-  // 5. Partnership Requests & Edu Bookings contoh (agar inbox /admin/permintaan terisi)
+  for (const batch of SAMPLE_BATCHES) {
+    const { id, ...rest } = batch;
+    await db.collection('production_batches').doc(id).set({ ...rest, createdAt: now });
+  }
+
+  for (const tx of SAMPLE_CASH_TX) {
+    const { id, ...rest } = tx;
+    await db.collection('cash_transactions').doc(id).set({ ...rest, createdAt: now });
+  }
+
   for (const req of SAMPLE_PARTNERSHIPS) {
     const { id, ...rest } = req;
-    await db.collection('partnership_requests').doc(id).set({
-      ...rest,
-      createdAt: now,
-    });
+    await db.collection('partnership_requests').doc(id).set({ ...rest, createdAt: now });
   }
+
   for (const bk of SAMPLE_EDU_BOOKINGS) {
     const { id, ...rest } = bk;
-    await db.collection('edu_bookings').doc(id).set({
-      ...rest,
-      createdAt: now,
-    });
+    await db.collection('edu_bookings').doc(id).set({ ...rest, createdAt: now });
   }
-  console.log(
-    `✓ ${SAMPLE_PARTNERSHIPS.length} permintaan kemitraan & ${SAMPLE_EDU_BOOKINGS.length} booking eduwisata selesai disemai.`
-  );
 
-  // 6. Site Settings Profile
   await db.collection('site_settings').doc('profile').set({
     organizationName: SITE_CONFIG.organizationName,
     tagline: SITE_CONFIG.tagline,
@@ -456,7 +540,6 @@ async function main() {
     updatedBy: 'seed-script',
   });
 
-  // 7. Opsional bootstrap UID Admin
   const adminArg = process.argv.find((arg) => arg.startsWith('--admin-uid='));
   if (adminArg) {
     const uid = adminArg.split('=')[1]?.trim();
@@ -471,11 +554,11 @@ async function main() {
         { merge: true }
       );
       await getAdminAuth().setCustomUserClaims(uid, { admin: true });
-      console.log(`✓ Admin UID ${uid} didaftarkan di admins/${uid} + custom claim admin:true.`);
+      console.log(`✓ Admin UID ${uid} aktif di admins/${uid} + claim admin:true.`);
     }
   }
 
-  console.log('Selesai! Database TPS 3R Abdi Dalem Klebengan Kadipiro siap digunakan.');
+  console.log('✓ Seluruh data operasional v2 (produk, dampak SIPSN, mitra+rute, batch, kas, inbox) selesai disemai!');
 }
 
 main().catch((err) => {

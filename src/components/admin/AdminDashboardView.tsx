@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { ImpactMetricsGrid } from '@/components/shared/ImpactMetricsGrid';
 import { ImpactTrendChart } from '@/components/shared/ImpactTrendChart';
 import { QuickLogForm } from './QuickLogForm';
+import { ProductionBatchTracker } from './ProductionBatchTracker';
 import { RecentLogsTable } from './RecentLogsTable';
 
 export function AdminDashboardView() {
@@ -23,7 +24,7 @@ export function AdminDashboardView() {
     setLoadingLogs(true);
     try {
       const [recentLogs, contributorList] = await Promise.all([
-        getRecentDailyLogs(15),
+        getRecentDailyLogs(20),
         getAllContributorsAdmin(),
       ]);
       setLogs(recentLogs);
@@ -46,7 +47,8 @@ export function AdminDashboardView() {
       <div>
         <h2>Dashboard Lapangan &amp; Quick Log</h2>
         <p className="text-sm text-muted">
-          Catat timbangan sampah masuk &amp; hasil panen harian dalam hitungan detik.
+          Catat timbangan harian, pantau jadwal panen biopond BSF/kompos, dan kirim struk poin
+          langsung ke WhatsApp penyetor.
         </p>
       </div>
 
@@ -63,13 +65,19 @@ export function AdminDashboardView() {
 
       <QuickLogForm contributors={contributors} onSaved={handleSaved} />
 
+      <ProductionBatchTracker />
+
       <Card>
         <CardBody>
           <ImpactTrendChart monthlyData={monthly} metric="waste" height={210} />
         </CardBody>
       </Card>
 
-      {loadingLogs ? <Skeleton variant="card" /> : <RecentLogsTable logs={logs} />}
+      {loadingLogs ? (
+        <Skeleton variant="card" />
+      ) : (
+        <RecentLogsTable logs={logs} onDeleted={handleSaved} />
+      )}
     </div>
   );
 }

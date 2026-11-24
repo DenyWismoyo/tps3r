@@ -11,6 +11,7 @@ import {
   Package,
   Sprout,
   Users,
+  Wallet,
   Wifi,
   WifiOff,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ import { Button } from '@/components/ui/Button';
 
 const NAV_ICONS: Record<string, ReactNode> = {
   '/admin': <ClipboardPlus size={19} />,
+  '/admin/kas': <Wallet size={19} />,
   '/admin/produk': <Package size={19} />,
   '/admin/penyetor': <Users size={19} />,
   '/admin/permintaan': <Inbox size={19} />,

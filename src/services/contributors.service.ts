@@ -39,6 +39,7 @@ function mapContributorDoc(id: string, data: DocumentData): Contributor {
     totalDepositedKg: Number(data.totalDepositedKg ?? 0),
     pointsBalance: Number(data.pointsBalance ?? 0),
     isActive: data.isActive !== false,
+    pickupDays: Array.isArray(data.pickupDays) ? (data.pickupDays as string[]) : [],
     lastDepositAt: data.lastDepositAt ? toIsoString(data.lastDepositAt) : undefined,
     notes: typeof data.notes === 'string' ? data.notes : undefined,
     createdAt: data.createdAt ? toIsoString(data.createdAt) : undefined,
@@ -108,6 +109,9 @@ export async function createContributor(input: ContributorInput): Promise<string
     updatedAt: serverTimestamp(),
   };
 
+  if (input.pickupDays && input.pickupDays.length > 0) {
+    payload.pickupDays = input.pickupDays;
+  }
   if (input.notes?.trim()) {
     payload.notes = input.notes.trim();
   }

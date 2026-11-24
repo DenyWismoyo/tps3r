@@ -46,6 +46,10 @@ function mapImpactSummary(data: DocumentData): ImpactSummary {
     totalFoodWasteKg: Number(data.totalFoodWasteKg ?? 0),
     totalOrganicWasteKg:
       typeof data.totalOrganicWasteKg === 'number' ? data.totalOrganicWasteKg : undefined,
+    totalInorganicWasteKg:
+      typeof data.totalInorganicWasteKg === 'number' ? data.totalInorganicWasteKg : 0,
+    totalResidueToTpaKg:
+      typeof data.totalResidueToTpaKg === 'number' ? data.totalResidueToTpaKg : 0,
     totalMaggotHarvestKg: Number(data.totalMaggotHarvestKg ?? 0),
     totalCompostAndKasgotKg: Number(data.totalCompostAndKasgotKg ?? 0),
     totalCompostKg: typeof data.totalCompostKg === 'number' ? data.totalCompostKg : undefined,
@@ -69,6 +73,8 @@ function mapMonthlyImpact(id: string, data: DocumentData): MonthlyImpact {
     kasgotKg: Number(data.kasgotKg ?? 0),
     foodWasteKg: typeof data.foodWasteKg === 'number' ? data.foodWasteKg : undefined,
     organicWasteKg: typeof data.organicWasteKg === 'number' ? data.organicWasteKg : undefined,
+    inorganicKg: typeof data.inorganicKg === 'number' ? data.inorganicKg : 0,
+    residueKg: typeof data.residueKg === 'number' ? data.residueKg : 0,
     pocLiter: typeof data.pocLiter === 'number' ? data.pocLiter : undefined,
     co2SavedKg: typeof data.co2SavedKg === 'number' ? data.co2SavedKg : undefined,
     logsCount: typeof data.logsCount === 'number' ? data.logsCount : undefined,

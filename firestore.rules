@@ -65,6 +65,8 @@ rules_version = '2';
 //   - estimatedCo2SavedKg: number (required, >= 0)
 //   - lastUpdatedAt: timestamp (required)
 //   - totalOrganicWasteKg: number (optional, >= 0)
+//   - totalInorganicWasteKg: number (optional, >= 0)
+//   - totalResidueToTpaKg: number (optional, >= 0)
 //   - totalCompostKg: number (optional, >= 0)
 //   - totalKasgotKg: number (optional, >= 0)
 //   - totalLogsCount: number (optional, >= 0)
@@ -80,6 +82,8 @@ rules_version = '2';
 //   - kasgotKg: number (required, >= 0)
 //   - foodWasteKg: number (optional, >= 0)
 //   - organicWasteKg: number (optional, >= 0)
+//   - inorganicKg: number (optional, >= 0)
+//   - residueKg: number (optional, >= 0)
 //   - pocLiter: number (optional, >= 0)
 //   - co2SavedKg: number (optional, >= 0)
 //   - logsCount: number (optional, >= 0)
@@ -109,6 +113,8 @@ rules_version = '2';
 //   - monthKey: string (required, 'YYYY-MM', prefix of date)
 //   - organicWasteKg: number (required, >= 0)
 //   - foodWasteKg: number (required, >= 0)
+//   - inorganicWasteKg: number (optional, 0..1000000)
+//   - residueToTpaKg: number (optional, 0..1000000)
 //   - maggotHarvestKg: number (required, >= 0)
 //   - compostProducedKg: number (required, >= 0)
 //   - kasgotProducedKg: number (required, >= 0)
@@ -132,6 +138,7 @@ rules_version = '2';
 //   - pointsBalance: number (required, >= 0)
 //   - isActive: bool (required)
 //   - address: string|null (optional, <= 300 chars)
+//   - pickupDays: list<string>|null (optional, max 7 items, each <= 20 chars)
 //   - lastDepositAt: timestamp|null (optional)
 //   - notes: string|null (optional, <= 500 chars)
 //   - createdAt: timestamp (optional, immutable if set)
@@ -172,6 +179,36 @@ rules_version = '2';
 //   - adminNotes: string|null (admin update only, <= 1000 chars)
 //   - updatedAt: timestamp (admin update only)
 //   - updatedBy: string|null (admin update only, <= 128 chars)
+//
+// Collection: cash_transactions (Admin-only financial ledger)
+// Document ID: auto-generated
+// Fields:
+//   - date: string (required, 'YYYY-MM-DD')
+//   - monthKey: string (required, 'YYYY-MM', prefix of date)
+//   - type: string (required, enum: 'pemasukan'|'pengeluaran')
+//   - category: string (required, 1..60 chars)
+//   - amount: number (required, > 0 and <= 1000000000)
+//   - description: string (required, 1..300 chars)
+//   - recordedBy: string (required, 1..128 chars, immutable)
+//   - createdAt: timestamp (required, immutable)
+//   - productId: string|null (optional, <= 128 chars)
+//   - productName: string|null (optional, <= 150 chars)
+//   - qtySold: number|null (optional, 0..100000)
+//   - updatedAt: timestamp|null (optional)
+//
+// Collection: production_batches (Admin-only biopond & kompos batch tracker)
+// Document ID: auto-generated
+// Fields:
+//   - code: string (required, 1..40 chars)
+//   - type: string (required, enum: 'biopond_maggot'|'bedeng_kompos')
+//   - startDate: string (required, 'YYYY-MM-DD')
+//   - targetHarvestDate: string (required, 'YYYY-MM-DD')
+//   - estimatedInputKg: number (required, 0..1000000)
+//   - status: string (required, enum: 'aktif'|'panen'|'selesai')
+//   - recordedBy: string (required, 1..128 chars, immutable)
+//   - createdAt: timestamp (required, immutable)
+//   - notes: string|null (optional, <= 500 chars)
+//   - updatedAt: timestamp|null (optional)
 //
 // ===============================================================
 
@@ -231,6 +268,10 @@ service cloud.firestore {
 
     function isValidNonNegativeNumber(val, maxVal) {
       return val is number && val >= 0 && val <= maxVal;
+    }
+
+    function isValidPositiveNumber(val, maxVal) {
+      return val is number && val > 0 && val <= maxVal;
     }
 
     function isValidOptionalNonNegativeNumber(data, field, maxVal) {
@@ -329,6 +370,18 @@ service cloud.firestore {
         isValidStringListItem(arr, 9, maxLen);
     }
 
+    function isValidPickupDays(arr) {
+      return arr is list &&
+        arr.size() <= 7 &&
+        isValidStringListItem(arr, 0, 20) &&
+        isValidStringListItem(arr, 1, 20) &&
+        isValidStringListItem(arr, 2, 20) &&
+        isValidStringListItem(arr, 3, 20) &&
+        isValidStringListItem(arr, 4, 20) &&
+        isValidStringListItem(arr, 5, 20) &&
+        isValidStringListItem(arr, 6, 20);
+    }
+
     // ===============================================================
     // Domain Validators (Invoked on BOTH create and update)
     // ===============================================================
@@ -372,6 +425,7 @@ service cloud.firestore {
           'totalWasteProcessedKg', 'totalFoodWasteKg', 'totalMaggotHarvestKg',
           'totalCompostAndKasgotKg', 'totalPocLiter', 'activeContributorsCount',
           'estimatedCo2SavedKg', 'lastUpdatedAt', 'totalOrganicWasteKg',
+          'totalInorganicWasteKg', 'totalResidueToTpaKg',
           'totalCompostKg', 'totalKasgotKg', 'totalLogsCount'
         ]) &&
         hasRequiredFields([
@@ -388,6 +442,8 @@ service cloud.firestore {
         isValidNonNegativeNumber(data.estimatedCo2SavedKg, 1000000000) &&
         data.lastUpdatedAt is timestamp &&
         isValidOptionalNonNegativeNumber(data, 'totalOrganicWasteKg', 1000000000) &&
+        isValidOptionalNonNegativeNumber(data, 'totalInorganicWasteKg', 1000000000) &&
+        isValidOptionalNonNegativeNumber(data, 'totalResidueToTpaKg', 1000000000) &&
         isValidOptionalNonNegativeNumber(data, 'totalCompostKg', 1000000000) &&
         isValidOptionalNonNegativeNumber(data, 'totalKasgotKg', 1000000000) &&
         isValidOptionalNonNegativeNumber(data, 'totalLogsCount', 100000000);
@@ -396,8 +452,8 @@ service cloud.firestore {
     function isValidImpactMonthly(data, docId) {
       return hasOnlyAllowedFields([
           'monthKey', 'label', 'wasteKg', 'maggotKg', 'compostKg', 'kasgotKg',
-          'foodWasteKg', 'organicWasteKg', 'pocLiter', 'co2SavedKg',
-          'logsCount', 'updatedAt'
+          'foodWasteKg', 'organicWasteKg', 'inorganicKg', 'residueKg',
+          'pocLiter', 'co2SavedKg', 'logsCount', 'updatedAt'
         ]) &&
         hasRequiredFields([
           'monthKey', 'label', 'wasteKg', 'maggotKg', 'compostKg', 'kasgotKg'
@@ -411,6 +467,8 @@ service cloud.firestore {
         isValidNonNegativeNumber(data.kasgotKg, 100000000) &&
         isValidOptionalNonNegativeNumber(data, 'foodWasteKg', 100000000) &&
         isValidOptionalNonNegativeNumber(data, 'organicWasteKg', 100000000) &&
+        isValidOptionalNonNegativeNumber(data, 'inorganicKg', 100000000) &&
+        isValidOptionalNonNegativeNumber(data, 'residueKg', 100000000) &&
         isValidOptionalNonNegativeNumber(data, 'pocLiter', 100000000) &&
         isValidOptionalNonNegativeNumber(data, 'co2SavedKg', 100000000) &&
         isValidOptionalNonNegativeNumber(data, 'logsCount', 1000000) &&
@@ -440,7 +498,8 @@ service cloud.firestore {
 
     function isValidDailyLog(data) {
       return hasOnlyAllowedFields([
-          'date', 'monthKey', 'organicWasteKg', 'foodWasteKg', 'maggotHarvestKg',
+          'date', 'monthKey', 'organicWasteKg', 'foodWasteKg',
+          'inorganicWasteKg', 'residueToTpaKg', 'maggotHarvestKg',
           'compostProducedKg', 'kasgotProducedKg', 'pocProducedLiter',
           'contributorId', 'contributorName', 'earnedPoints', 'notes',
           'recordedBy', 'createdAt', 'updatedAt'
@@ -455,6 +514,8 @@ service cloud.firestore {
         data.date.matches("^" + data.monthKey + "-.*") &&
         isValidNonNegativeNumber(data.organicWasteKg, 1000000) &&
         isValidNonNegativeNumber(data.foodWasteKg, 1000000) &&
+        isValidOptionalNonNegativeNumber(data, 'inorganicWasteKg', 1000000) &&
+        isValidOptionalNonNegativeNumber(data, 'residueToTpaKg', 1000000) &&
         isValidNonNegativeNumber(data.maggotHarvestKg, 1000000) &&
         isValidNonNegativeNumber(data.compostProducedKg, 1000000) &&
         isValidNonNegativeNumber(data.kasgotProducedKg, 1000000) &&
@@ -472,8 +533,8 @@ service cloud.firestore {
       // Strictly excludes sensitive PII fields (e.g. nik, email, ktp)
       return hasOnlyAllowedFields([
           'memberCode', 'name', 'type', 'phoneNormalized', 'address',
-          'totalDepositedKg', 'pointsBalance', 'isActive', 'lastDepositAt',
-          'notes', 'createdAt', 'updatedAt'
+          'pickupDays', 'totalDepositedKg', 'pointsBalance', 'isActive',
+          'lastDepositAt', 'notes', 'createdAt', 'updatedAt'
         ]) &&
         hasRequiredFields([
           'memberCode', 'name', 'type', 'phoneNormalized',
@@ -487,6 +548,7 @@ service cloud.firestore {
         isValidNonNegativeNumber(data.pointsBalance, 1000000000) &&
         data.isActive is bool &&
         isValidOptionalString(data, 'address', 0, 300) &&
+        (!('pickupDays' in data) || data.pickupDays == null || isValidPickupDays(data.pickupDays)) &&
         isValidOptionalTimestamp(data, 'lastDepositAt') &&
         isValidOptionalString(data, 'notes', 0, 500) &&
         isValidOptionalTimestamp(data, 'createdAt') &&
@@ -577,6 +639,52 @@ service cloud.firestore {
         isValidOptionalString(data, 'adminNotes', 0, 1000) &&
         isValidOptionalTimestamp(data, 'updatedAt') &&
         isValidOptionalString(data, 'updatedBy', 0, 128);
+    }
+
+    function isValidCashTransaction(data) {
+      return hasOnlyAllowedFields([
+          'date', 'monthKey', 'type', 'category', 'amount', 'description',
+          'productId', 'productName', 'qtySold',
+          'recordedBy', 'createdAt', 'updatedAt'
+        ]) &&
+        hasRequiredFields([
+          'date', 'monthKey', 'type', 'category', 'amount', 'description',
+          'recordedBy', 'createdAt'
+        ]) &&
+        isValidDateYmd(data.date) &&
+        isValidMonthKey(data.monthKey) &&
+        data.date.matches("^" + data.monthKey + "-.*") &&
+        data.type in ['pemasukan', 'pengeluaran'] &&
+        isNonEmptyString(data.category, 1, 60) &&
+        isValidPositiveNumber(data.amount, 1000000000) &&
+        isNonEmptyString(data.description, 1, 300) &&
+        isNonEmptyString(data.recordedBy, 1, 128) &&
+        data.createdAt is timestamp &&
+        isValidOptionalString(data, 'productId', 0, 128) &&
+        isValidOptionalString(data, 'productName', 0, 150) &&
+        isValidOptionalNonNegativeNumber(data, 'qtySold', 100000) &&
+        isValidOptionalTimestamp(data, 'updatedAt');
+    }
+
+    function isValidProductionBatch(data) {
+      return hasOnlyAllowedFields([
+          'code', 'type', 'startDate', 'targetHarvestDate', 'estimatedInputKg',
+          'status', 'notes', 'recordedBy', 'createdAt', 'updatedAt'
+        ]) &&
+        hasRequiredFields([
+          'code', 'type', 'startDate', 'targetHarvestDate', 'estimatedInputKg',
+          'status', 'recordedBy', 'createdAt'
+        ]) &&
+        isNonEmptyString(data.code, 1, 40) &&
+        data.type in ['biopond_maggot', 'bedeng_kompos'] &&
+        isValidDateYmd(data.startDate) &&
+        isValidDateYmd(data.targetHarvestDate) &&
+        isValidNonNegativeNumber(data.estimatedInputKg, 1000000) &&
+        data.status in ['aktif', 'panen', 'selesai'] &&
+        isNonEmptyString(data.recordedBy, 1, 128) &&
+        data.createdAt is timestamp &&
+        isValidOptionalString(data, 'notes', 0, 500) &&
+        isValidOptionalTimestamp(data, 'updatedAt');
     }
 
     // ===============================================================
@@ -678,7 +786,27 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // 10. Explicit Default Deny for all other paths & subcollections
+    // 10. Cash Transactions / Financial Ledger (Admin-only)
+    match /cash_transactions/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && isValidCashTransaction(request.resource.data);
+      allow update: if isAdmin() &&
+        isValidCashTransaction(request.resource.data) &&
+        areImmutableFieldsUnchanged(['createdAt', 'recordedBy']);
+      allow delete: if isAdmin();
+    }
+
+    // 11. Production Batches — Biopond Maggot & Bedeng Kompos (Admin-only)
+    match /production_batches/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && isValidProductionBatch(request.resource.data);
+      allow update: if isAdmin() &&
+        isValidProductionBatch(request.resource.data) &&
+        areImmutableFieldsUnchanged(['createdAt', 'recordedBy']);
+      allow delete: if isAdmin();
+    }
+
+    // 12. Explicit Default Deny for all other paths & subcollections
     match /{document=**} {
       allow read, write: if false;
     }

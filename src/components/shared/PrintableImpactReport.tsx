@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Printer } from 'lucide-react';
+import { Download, Printer } from 'lucide-react';
 import { SITE_CONFIG } from '@/config/site';
 import type { ImpactSummary, MonthlyImpact } from '@/types/database';
 import { formatDateId, formatNumber } from '@/utils/format';
+import { exportMonthlyImpactCsv } from '@/utils/exportCsv';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { Card, CardBody } from '@/components/ui/Card';
 import { Tabs } from '@/components/ui/Tabs';
 import { ImpactMetricsGrid } from './ImpactMetricsGrid';
@@ -22,9 +24,12 @@ export function PrintableImpactReport({
 }: PrintableImpactReportProps) {
   const [metric, setMetric] = useState<ImpactChartMetric>('waste');
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const inorganicTotal = summary.totalInorganicWasteKg ?? 0;
+  const residueTotal = summary.totalResidueToTpaKg ?? 0;
+  const divertedTotal = summary.totalWasteProcessedKg + inorganicTotal;
+  const incomingTotal = divertedTotal + residueTotal;
+  const reductionPct =
+    incomingTotal > 0 ? Math.round((divertedTotal / incomingTotal) * 1000) / 10 : 100;
 
   return (
     <div className="stack stack--lg">
@@ -39,31 +44,43 @@ export function PrintableImpactReport({
             { key: 'maggot', label: 'Panen Maggot' },
           ]}
         />
-        <Button variant="primary" size="lg" onClick={handlePrint}>
-          <Printer size={18} />
-          <span>Cetak Laporan Bulanan (PDF / Print)</span>
-        </Button>
+        <div className="cluster">
+          <Button
+            variant="outline"
+            onClick={() => exportMonthlyImpactCsv(monthlyData)}
+          >
+            <Download size={17} />
+            <span>Export CSV (DLH/Excel)</span>
+          </Button>
+          <Button variant="primary" size="lg" onClick={() => window.print()}>
+            <Printer size={18} />
+            <span>Cetak Laporan A4</span>
+          </Button>
+        </div>
       </div>
 
       <article className="print-report stack stack--lg">
-        {/* Kop Laporan Resmi DLH / CSR */}
         <header className="print-report__kop">
           <span className="text-xs font-bold text-primary">
-            LAPORAN TRANSPARANSI PENGOLAHAN SAMPAH ORGANIK & EKONOMI SIRKULAR
+            LAPORAN TRANSPARANSI PENGOLAHAN SAMPAH ORGANIK &amp; EKONOMI SIRKULAR
           </span>
           <h2>{SITE_CONFIG.organizationName}</h2>
           <p className="text-sm text-muted">
             {SITE_CONFIG.address} • {SITE_CONFIG.legalityNumber}
           </p>
-          <p className="text-xs text-muted">
-            Pembaruan Data Terakhir: {formatDateId(summary.lastUpdatedAt)} • Kontak:{' '}
-            {SITE_CONFIG.phoneDisplay}
-          </p>
+          <div className="cluster">
+            <span className="text-xs text-muted">
+              Pembaruan Data: {formatDateId(summary.lastUpdatedAt)} • WA: {SITE_CONFIG.phoneDisplay}
+            </span>
+            <Badge tone="available">
+              Reduksi TPA Putri Cempo: {formatNumber(reductionPct, 1)}%
+            </Badge>
+          </div>
         </header>
 
         <ImpactMetricsGrid
           summary={summary}
-          periodLabel="Akumulasi Kinerja Pengolahan TPS 3R"
+          periodLabel={`Akumulasi Kinerja TPS 3R • Anorganik Terpilah: ${formatNumber(inorganicTotal, 0)} kg • Residu TPA: ${formatNumber(residueTotal, 0)} kg`}
         />
 
         <Card>
@@ -73,23 +90,24 @@ export function PrintableImpactReport({
         </Card>
 
         <div className="stack stack--sm">
-          <h3>Rekapitulasi Bulanan</h3>
+          <h3>Rekapitulasi Bulanan (Format DLH / SIPSN / CSR)</h3>
           <div className="table-wrap">
             <table className="data-table">
               <thead>
                 <tr>
                   <th>Bulan</th>
-                  <th>Sampah Masuk (kg)</th>
-                  <th>Maggot BSF (kg)</th>
-                  <th>Kompos (kg)</th>
-                  <th>Kasgot (kg)</th>
-                  <th>Reduksi CO2e (kg)</th>
+                  <th>Organik (kg)</th>
+                  <th>Anorganik (kg)</th>
+                  <th>Residu TPA (kg)</th>
+                  <th>Maggot (kg)</th>
+                  <th>Kompos &amp; Kasgot (kg)</th>
+                  <th>CO2e Dicegah (kg)</th>
                 </tr>
               </thead>
               <tbody>
                 {monthlyData.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center text-muted">
+                    <td colSpan={7} className="text-center text-muted">
                       Belum ada data rekap bulanan.
                     </td>
                   </tr>
@@ -102,9 +120,10 @@ export function PrintableImpactReport({
                       <tr key={row.monthKey}>
                         <td className="font-semibold">{row.label}</td>
                         <td>{formatNumber(row.wasteKg, 1)}</td>
+                        <td>{formatNumber(row.inorganicKg ?? 0, 1)}</td>
+                        <td>{formatNumber(row.residueKg ?? 0, 1)}</td>
                         <td>{formatNumber(row.maggotKg, 1)}</td>
-                        <td>{formatNumber(row.compostKg, 1)}</td>
-                        <td>{formatNumber(row.kasgotKg, 1)}</td>
+                        <td>{formatNumber(row.compostKg + row.kasgotKg, 1)}</td>
                         <td>{formatNumber(co2, 1)}</td>
                       </tr>
                     );
@@ -124,7 +143,7 @@ export function PrintableImpactReport({
           </div>
           <div>
             <div className="text-sm">Dicetak pada {formatDateId(new Date())}</div>
-            <div className="text-sm font-semibold">Sekretaris / Pencatat Data</div>
+            <div className="text-sm font-semibold">Koordinator / Pencatat Data</div>
             <div className="print-report__sig-space" />
             <div className="font-bold">{SITE_CONFIG.secretaryName}</div>
           </div>

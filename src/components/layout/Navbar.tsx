@@ -31,13 +31,14 @@ export function Navbar() {
       <header className="navbar no-print">
         <Container>
           <div className="navbar__inner">
-            <Link href="/" className="navbar__brand">
+            <Link
+              href="/"
+              className="navbar__brand"
+              aria-label={SITE_CONFIG.organizationName}
+              title={SITE_CONFIG.shortName}
+            >
               <span className="navbar__brand-mark" aria-hidden="true">
-                <Sprout size={20} />
-              </span>
-              <span>
-                {SITE_CONFIG.shortName}
-                <span className="navbar__brand-sub">Ekonomi Sirkular</span>
+                <Sprout size={22} />
               </span>
             </Link>
 

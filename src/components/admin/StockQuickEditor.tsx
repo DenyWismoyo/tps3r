@@ -21,6 +21,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/components/ui/Toast';
 import { ProductFormModal } from './ProductFormModal';
+import { StockBroadcastBox } from './StockBroadcastBox';
 
 const STATUS_CYCLE: readonly StockStatus[] = ['available', 'preorder', 'soldout'];
 
@@ -85,6 +86,8 @@ export function StockQuickEditor() {
           <span>Tambah Produk</span>
         </Button>
       </div>
+
+      {!loading && products.length > 0 ? <StockBroadcastBox products={products} /> : null}
 
       {loading ? (
         <div className="stack">

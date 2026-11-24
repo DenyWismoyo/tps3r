@@ -33,6 +33,24 @@ export const partnershipPartnerTypeEnum = z.enum([
 export const partnershipStatusEnum = z.enum(['baru', 'dihubungi', 'aktif', 'ditolak']);
 export const eduBookingStatusEnum = z.enum(['menunggu', 'dikonfirmasi', 'selesai', 'batal']);
 
+export const cashTransactionTypeEnum = z.enum(['pemasukan', 'pengeluaran']);
+export const cashCategoryEnum = z.enum([
+  'penjualan_maggot',
+  'penjualan_pupuk',
+  'penjualan_kebun',
+  'eduwisata',
+  'iuran_donasi',
+  'bbm_jemput',
+  'kemasan_karung',
+  'pakan_em4',
+  'honor_petugas',
+  'perawatan_alat',
+  'lainnya',
+]);
+
+export const productionBatchTypeEnum = z.enum(['biopond_maggot', 'bedeng_kompos']);
+export const productionBatchStatusEnum = z.enum(['aktif', 'panen', 'selesai']);
+
 const dateYmdRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -77,6 +95,8 @@ export const dailyLogInputSchema = z
     date: z.string().regex(dateYmdRegex, 'Format tanggal harus YYYY-MM-DD'),
     organicWasteKg: z.coerce.number().min(0).max(1_000_000).default(0),
     foodWasteKg: z.coerce.number().min(0).max(1_000_000).default(0),
+    inorganicWasteKg: z.coerce.number().min(0).max(1_000_000).default(0),
+    residueToTpaKg: z.coerce.number().min(0).max(1_000_000).default(0),
     maggotHarvestKg: z.coerce.number().min(0).max(1_000_000).default(0),
     compostProducedKg: z.coerce.number().min(0).max(1_000_000).default(0),
     kasgotProducedKg: z.coerce.number().min(0).max(1_000_000).default(0),
@@ -88,6 +108,8 @@ export const dailyLogInputSchema = z
     (data) =>
       data.organicWasteKg +
         data.foodWasteKg +
+        data.inorganicWasteKg +
+        data.residueToTpaKg +
         data.maggotHarvestKg +
         data.compostProducedKg +
         data.kasgotProducedKg +
@@ -105,6 +127,7 @@ export const contributorInputSchema = z.object({
   type: contributorTypeEnum,
   phone: phoneSchema,
   address: z.string().trim().max(300).default(''),
+  pickupDays: z.array(z.string().trim().max(20)).max(7).optional(),
   isActive: z.boolean().default(true),
   notes: z.string().trim().max(500).optional(),
 });
@@ -144,9 +167,33 @@ export const eduBookingSchema = z.object({
   notes: z.string().trim().max(1000).optional(),
 });
 
+export const cashTransactionSchema = z.object({
+  date: z.string().regex(dateYmdRegex, 'Format tanggal harus YYYY-MM-DD'),
+  type: cashTransactionTypeEnum,
+  category: cashCategoryEnum,
+  amount: z.coerce
+    .number()
+    .positive('Nominal harus lebih dari 0')
+    .max(1_000_000_000, 'Nominal terlalu besar'),
+  description: z.string().trim().min(2, 'Keterangan minimal 2 karakter').max(300),
+  productId: z.string().trim().max(128).optional(),
+  qtySold: z.coerce.number().min(0).max(100_000).optional(),
+});
+
+export const productionBatchSchema = z.object({
+  code: z.string().trim().min(2, 'Kode batch wajib diisi').max(40),
+  type: productionBatchTypeEnum,
+  startDate: z.string().regex(dateYmdRegex, 'Tanggal mulai tidak valid'),
+  targetHarvestDate: z.string().regex(dateYmdRegex, 'Target panen tidak valid'),
+  estimatedInputKg: z.coerce.number().min(0).max(1_000_000).default(0),
+  notes: z.string().trim().max(500).optional(),
+});
+
 export type ProductInput = z.infer<typeof productInputSchema>;
 export type DailyLogInput = z.infer<typeof dailyLogInputSchema>;
 export type ContributorInput = z.infer<typeof contributorInputSchema>;
 export type PointsRedeemInput = z.infer<typeof pointsRedeemSchema>;
 export type PartnershipRequestInput = z.infer<typeof partnershipRequestSchema>;
 export type EduBookingInput = z.infer<typeof eduBookingSchema>;
+export type CashTransactionInput = z.infer<typeof cashTransactionSchema>;
+export type ProductionBatchInput = z.infer<typeof productionBatchSchema>;

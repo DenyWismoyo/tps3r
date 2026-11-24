@@ -14,10 +14,11 @@ export const PUBLIC_NAV_ITEMS: readonly NavItem[] = [
 ] as const;
 
 export const ADMIN_NAV_ITEMS: readonly NavItem[] = [
-  { label: 'Quick Log', href: '/admin', description: 'Input harian < 1 menit' },
-  { label: 'Produk & Stok', href: '/admin/produk', description: 'Katalog & stok 1-klik' },
-  { label: 'Penyetor & Poin', href: '/admin/penyetor', description: 'Mitra & tabungan poin' },
-  { label: 'Permintaan', href: '/admin/permintaan', description: 'Inbox jemput & eduwisata' },
+  { label: 'Quick Log', href: '/admin', description: 'Timbangan & batch produksi' },
+  { label: 'Buku Kas', href: '/admin/kas', description: 'Pemasukan & pengeluaran' },
+  { label: 'Produk', href: '/admin/produk', description: 'Katalog & stok 1-klik' },
+  { label: 'Penyetor', href: '/admin/penyetor', description: 'Mitra, poin & rute jemput' },
+  { label: 'Inbox', href: '/admin/permintaan', description: 'Jemput & eduwisata' },
 ] as const;
 
 export const FOOTER_QUICK_LINKS: readonly NavItem[] = [

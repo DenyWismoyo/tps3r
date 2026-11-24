@@ -15,6 +15,32 @@ export type PartnershipPartnerType =
 export type PartnershipStatus = 'baru' | 'dihubungi' | 'aktif' | 'ditolak';
 export type EduBookingStatus = 'menunggu' | 'dikonfirmasi' | 'selesai' | 'batal';
 
+export type CashTransactionType = 'pemasukan' | 'pengeluaran';
+export type CashCategory =
+  | 'penjualan_maggot'
+  | 'penjualan_pupuk'
+  | 'penjualan_kebun'
+  | 'eduwisata'
+  | 'iuran_donasi'
+  | 'bbm_jemput'
+  | 'kemasan_karung'
+  | 'pakan_em4'
+  | 'honor_petugas'
+  | 'perawatan_alat'
+  | 'lainnya';
+
+export type ProductionBatchType = 'biopond_maggot' | 'bedeng_kompos';
+export type ProductionBatchStatus = 'aktif' | 'panen' | 'selesai';
+
+export const PICKUP_DAYS_LIST = [
+  'Senin',
+  'Selasa',
+  'Rabu',
+  'Kamis',
+  'Jumat',
+  'Sabtu',
+] as const;
+
 export const PRODUCT_CATEGORY_LABELS: Record<ProductCategory, string> = {
   maggot: 'Maggot BSF',
   kompos: 'Pupuk Kompos',
@@ -62,6 +88,31 @@ export const EDU_BOOKING_STATUS_LABELS: Record<EduBookingStatus, string> = {
   batal: 'Dibatalkan',
 };
 
+export const CASH_CATEGORY_LABELS: Record<CashCategory, string> = {
+  penjualan_maggot: 'Penjualan Maggot BSF',
+  penjualan_pupuk: 'Penjualan Kompos / Kasgot / POC',
+  penjualan_kebun: 'Penjualan Sayur / Hasil Kebun',
+  eduwisata: 'Kunjungan Eduwisata / Pelatihan',
+  iuran_donasi: 'Iuran Warga / Donasi CSR',
+  bbm_jemput: 'BBM Motor Roda 3 / Jemput',
+  kemasan_karung: 'Karung, Botol & Kemasan',
+  pakan_em4: 'EM4, Molase & Kebutuhan Biopond',
+  honor_petugas: 'Honor / Insentif Petugas',
+  perawatan_alat: 'Perawatan Mesin & Biopond',
+  lainnya: 'Lainnya',
+};
+
+export const BATCH_TYPE_LABELS: Record<ProductionBatchType, string> = {
+  biopond_maggot: 'Biopond Maggot BSF',
+  bedeng_kompos: 'Bedeng Fermentasi Kompos',
+};
+
+export const BATCH_STATUS_LABELS: Record<ProductionBatchStatus, string> = {
+  aktif: 'Proses Budidaya',
+  panen: 'Siap / Sedang Panen',
+  selesai: 'Selesai',
+};
+
 export interface Product {
   id: string;
   slug: string;
@@ -84,7 +135,7 @@ export interface Product {
   isFeatured: boolean;
   isActive: boolean;
   createdAt?: string;
-  updatedAt: string; // ISO string hasil konversi Firestore Timestamp
+  updatedAt: string;
 }
 
 export interface DailyLog {
@@ -93,6 +144,8 @@ export interface DailyLog {
   monthKey: string; // 'YYYY-MM'
   organicWasteKg: number;
   foodWasteKg: number;
+  inorganicWasteKg?: number;
+  residueToTpaKg?: number;
   maggotHarvestKg: number;
   compostProducedKg: number;
   kasgotProducedKg: number;
@@ -110,6 +163,8 @@ export interface ImpactSummary {
   totalWasteProcessedKg: number;
   totalFoodWasteKg: number;
   totalOrganicWasteKg?: number;
+  totalInorganicWasteKg?: number;
+  totalResidueToTpaKg?: number;
   totalMaggotHarvestKg: number;
   totalCompostAndKasgotKg: number;
   totalCompostKg?: number;
@@ -130,6 +185,8 @@ export interface MonthlyImpact {
   kasgotKg: number;
   foodWasteKg?: number;
   organicWasteKg?: number;
+  inorganicKg?: number;
+  residueKg?: number;
   pocLiter?: number;
   co2SavedKg?: number;
   logsCount?: number;
@@ -138,7 +195,7 @@ export interface MonthlyImpact {
 
 export interface Contributor {
   id: string;
-  memberCode: string; // 'TPS-001'
+  memberCode: string; // 'ADK-001'
   name: string;
   type: ContributorType;
   phoneNormalized: string; // '628123456789'
@@ -146,6 +203,7 @@ export interface Contributor {
   totalDepositedKg: number;
   pointsBalance: number;
   isActive: boolean;
+  pickupDays?: string[];
   lastDepositAt?: string;
   notes?: string;
   createdAt?: string;
@@ -186,6 +244,36 @@ export interface EduBooking {
   createdAt: string;
   updatedAt?: string;
   updatedBy?: string;
+}
+
+export interface CashTransaction {
+  id: string;
+  date: string; // 'YYYY-MM-DD'
+  monthKey: string; // 'YYYY-MM'
+  type: CashTransactionType;
+  category: CashCategory;
+  amount: number;
+  description: string;
+  productId?: string;
+  productName?: string;
+  qtySold?: number;
+  recordedBy: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ProductionBatch {
+  id: string;
+  code: string; // e.g., 'BP-01' atau 'KM-02'
+  type: ProductionBatchType;
+  startDate: string; // 'YYYY-MM-DD'
+  targetHarvestDate: string; // 'YYYY-MM-DD'
+  estimatedInputKg: number;
+  status: ProductionBatchStatus;
+  notes?: string;
+  recordedBy: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface SiteSettingsOverride {
