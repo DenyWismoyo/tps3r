@@ -52,7 +52,7 @@ export function ContributorManager() {
     try {
       const list = await getAllContributorsAdmin();
       setContributors(list);
-      setMemberCode(`TPS-${String(list.length + 1).padStart(3, '0')}`);
+      setMemberCode(`ADK-${String(list.length + 1).padStart(3, '0')}`);
     } finally {
       setLoading(false);
     }

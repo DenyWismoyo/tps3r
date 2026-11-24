@@ -54,7 +54,7 @@ export function PointsLookupWidget() {
         <InputField
           id="points-lookup-input"
           label="Nomor HP atau Kode Member"
-          placeholder="Contoh: TPS-001 atau 08123450001"
+          placeholder="Contoh: ADK-001 atau 08123450001"
           value={queryText}
           onChange={(e) => setQueryText(e.target.value)}
           error={error ?? undefined}
@@ -70,7 +70,7 @@ export function PointsLookupWidget() {
           <div className="card__body">
             <p className="text-sm font-semibold">Data member belum ditemukan.</p>
             <p className="text-xs text-muted">
-              Periksa kembali penulisan kode (misal <strong>TPS-001</strong>) atau nomor HP yang
+              Periksa kembali penulisan kode (misal <strong>ADK-001</strong>) atau nomor HP yang
               terdaftar saat penyetoran.
             </p>
           </div>
