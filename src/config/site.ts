@@ -27,8 +27,8 @@ export const SITE_CONFIG: SiteProfileConfig = {
     'Ekonomi Sirkular Kali Klebengan Surakarta: Dari Sampah Organik Menjadi Maggot BSF, Kasgot, Kompos & Urban Farming',
   description:
     'Platform digital Kelompok Tani dan TPS 3R Abdi Dalem Klebengan (Kampung Ngipang, Kelurahan Kadipiro, Kecamatan Banjarsari, Kota Surakarta) pengolah sampah organik & sisa makanan menjadi Maggot BSF, Kasgot, Kompos, POC, dan hasil kebun tayurdapot guna mengurangi beban TPA Putri Cempo.',
-  whatsappNumber: '6281234567890',
-  phoneDisplay: '0812-3456-7890 (Admin TPS 3R — ubah di config/site.ts)',
+  whatsappNumber: '6282134148266',
+  phoneDisplay: '0821-3414-8266',
   email: 'tps3r.abdidalemklebengan@gmail.com',
   address:
     'RT 01 / RW 17, Kampung Ngipang (Kawasan Bantaran Kali Klebengan, Selatan RSUD Ngipang), Kel. Kadipiro, Kec. Banjarsari, Kota Surakarta, Jawa Tengah 57136',
