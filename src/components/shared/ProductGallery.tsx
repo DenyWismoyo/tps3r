@@ -160,7 +160,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
         {product.description ? (
           <Card tinted>
             <CardBody>
-              <h4>Deskripsi Produk</h4>
+              <h3>Deskripsi Produk</h3>
               <p className="text-sm">{product.description}</p>
             </CardBody>
           </Card>
@@ -168,7 +168,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
 
         {product.benefits && product.benefits.length > 0 ? (
           <div className="stack stack--xs">
-            <h4>Keunggulan</h4>
+            <h3>Keunggulan</h3>
             <ul className="product-gallery__spec-list">
               {product.benefits.map((item) => (
                 <li key={item} className="product-gallery__spec-item">
@@ -183,7 +183,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
         {product.usageGuide ? (
           <Card>
             <CardBody>
-              <h4>Panduan Takaran & Pemakaian</h4>
+              <h3>Panduan Takaran &amp; Pemakaian</h3>
               <p className="text-sm text-muted">{product.usageGuide}</p>
             </CardBody>
           </Card>

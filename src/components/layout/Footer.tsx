@@ -38,7 +38,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4>Navigasi</h4>
+            <h2>Navigasi</h2>
             <ul className="footer__links">
               {PUBLIC_NAV_ITEMS.map((item) => (
                 <li key={item.href}>
@@ -49,7 +49,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4>Layanan Cepat</h4>
+            <h2>Layanan Cepat</h2>
             <ul className="footer__links">
               {FOOTER_QUICK_LINKS.map((item) => (
                 <li key={item.href}>
@@ -60,7 +60,7 @@ export function Footer() {
           </div>
 
           <div className="stack stack--sm">
-            <h4>Lokasi &amp; Kontak</h4>
+            <h2>Lokasi &amp; Kontak</h2>
             <p className="footer__meta-row">
               <MapPin size={15} aria-hidden="true" />
               <span>{SITE_CONFIG.address}</span>

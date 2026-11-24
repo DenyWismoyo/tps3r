@@ -72,7 +72,9 @@ export function Navbar() {
                 <ShoppingBag size={18} />
                 <span className="sr-only">Keranjang</span>
                 {totalItems > 0 ? (
-                  <span className="navbar__cart-count">{totalItems}</span>
+                  <span className="navbar__cart-count" aria-hidden="true">
+                    {totalItems}
+                  </span>
                 ) : null}
               </Button>
 

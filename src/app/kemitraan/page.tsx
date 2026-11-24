@@ -30,6 +30,7 @@ export default async function KemitraanPage() {
       />
       <section className="section section--tinted">
         <Container>
+          <h2 className="sr-only">Manfaat Kemitraan Penyetor</h2>
           <div className="grid-3">
             {PARTNERSHIP_BENEFITS.map((item) => (
               <Card key={item.title}>

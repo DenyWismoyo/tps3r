@@ -26,6 +26,7 @@ export default async function KatalogPage() {
       />
       <section className="section">
         <Container>
+          <h2 className="sr-only">Daftar Produk Katalog TPS 3R</h2>
           <ProductGrid products={products} />
         </Container>
       </section>

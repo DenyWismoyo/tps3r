@@ -44,17 +44,17 @@ export function PrintableImpactReport({
             { key: 'maggot', label: 'Panen Maggot' },
           ]}
         />
-        <div className="cluster">
+        <div className="report-toolbar__actions">
           <Button
             variant="outline"
             onClick={() => exportMonthlyImpactCsv(monthlyData)}
           >
-            <Download size={17} />
-            <span>Export CSV (DLH/Excel)</span>
+            <Download size={16} />
+            <span>Export CSV</span>
           </Button>
           <Button variant="primary" onClick={() => window.print()}>
-            <Printer size={17} />
-            <span>Cetak Laporan A4</span>
+            <Printer size={16} />
+            <span>Cetak A4</span>
           </Button>
         </div>
       </div>

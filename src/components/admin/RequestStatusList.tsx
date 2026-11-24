@@ -174,8 +174,8 @@ export function RequestStatusList() {
                     {req.notes ? <p className="text-xs text-muted">Catatan: {req.notes}</p> : null}
                   </div>
 
-                  <div className="cluster cluster--between">
-                    <div className="cluster">
+                  <div className="request-actions-bar">
+                    <div className="request-status-grid">
                       {PARTNERSHIP_STATUSES.map((st) => (
                         <Button
                           key={st}
@@ -229,8 +229,8 @@ export function RequestStatusList() {
                   {bk.notes ? <p className="text-xs text-muted">Catatan: {bk.notes}</p> : null}
                 </div>
 
-                <div className="cluster cluster--between">
-                  <div className="cluster">
+                <div className="request-actions-bar">
+                  <div className="request-status-grid">
                     {EDU_STATUSES.map((st) => (
                       <Button
                         key={st}
