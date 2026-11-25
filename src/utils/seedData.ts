@@ -27,7 +27,8 @@ const SAMPLE_PRODUCTS = [
     unit: 'kg',
     stockQty: 55,
     status: 'available',
-    images: [],
+    images: ['https://storage.googleapis.com/tps3r-sigap-586c4/products/maggot-bsf-segar/cover.jpg'],
+    thumbnailUrl: 'https://storage.googleapis.com/tps3r-sigap-586c4/products/maggot-bsf-segar/cover.jpg',
     benefits: [
       'Protein kasar 42%–45% dengan asam amino esensial lengkap',
       'Mengandung asam laurat alami untuk ketahanan tubuh ikan & unggas',
@@ -53,7 +54,8 @@ const SAMPLE_PRODUCTS = [
     unit: 'kemasan 500g',
     stockQty: 30,
     status: 'available',
-    images: [],
+    images: ['https://storage.googleapis.com/tps3r-sigap-586c4/products/maggot-bsf-kering/cover.jpg'],
+    thumbnailUrl: 'https://storage.googleapis.com/tps3r-sigap-586c4/products/maggot-bsf-kering/cover.jpg',
     benefits: [
       'Tahan simpan hingga 6 bulan di wadah tertutup rapat',
       'Cocok untuk ikan koi, channa, ayam petelur & burung kicau',
@@ -79,7 +81,8 @@ const SAMPLE_PRODUCTS = [
     unit: 'karung 10kg',
     stockQty: 72,
     status: 'available',
-    images: [],
+    images: ['https://storage.googleapis.com/tps3r-sigap-586c4/products/kasgot-halus-10kg/cover.jpg'],
+    thumbnailUrl: 'https://storage.googleapis.com/tps3r-sigap-586c4/products/kasgot-halus-10kg/cover.jpg',
     benefits: [
       'Tekstur remah halus, tidak berbau, dan aman untuk akar tanaman pot',
       'Kaya unsur hara N-P-K organik serta mikroorganisme penyubur tanah',
@@ -105,7 +108,8 @@ const SAMPLE_PRODUCTS = [
     unit: 'karung 25kg',
     stockQty: 110,
     status: 'available',
-    images: [],
+    images: ['https://storage.googleapis.com/tps3r-sigap-586c4/products/kompos-curah-25kg/cover.jpg'],
+    thumbnailUrl: 'https://storage.googleapis.com/tps3r-sigap-586c4/products/kompos-curah-25kg/cover.jpg',
     benefits: [
       'Menggemburkan tanah keras dan meningkatkan daya simpan air',
       'Mengurangi kebutuhan pupuk kimia sintetis pada lahan pertanian',
@@ -131,7 +135,8 @@ const SAMPLE_PRODUCTS = [
     unit: 'botol 1L',
     stockQty: 45,
     status: 'available',
-    images: [],
+    images: ['https://storage.googleapis.com/tps3r-sigap-586c4/products/poc-organik-1l/cover.jpg'],
+    thumbnailUrl: 'https://storage.googleapis.com/tps3r-sigap-586c4/products/poc-organik-1l/cover.jpg',
     benefits: [
       '1 botol 1L menghasilkan 50 liter larutan nutrisi siap pakai',
       'Cepat diserap akar maupun stomata daun tanaman',
@@ -157,7 +162,8 @@ const SAMPLE_PRODUCTS = [
     unit: 'paket (3 ikat)',
     stockQty: 18,
     status: 'preorder',
-    images: [],
+    images: ['https://storage.googleapis.com/tps3r-sigap-586c4/products/paket-sayur-organik-kebun/cover.jpg'],
+    thumbnailUrl: 'https://storage.googleapis.com/tps3r-sigap-586c4/products/paket-sayur-organik-kebun/cover.jpg',
     benefits: [
       '100% bebas pestisida kimia sintetis',
       'Dipetik pagi hari langsung dari kebun RW 17 Ngipang',

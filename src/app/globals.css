@@ -1801,6 +1801,29 @@ ol {
   gap: 0.4rem;
 }
 
+.upload-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.55rem;
+  margin-top: 0.5rem;
+}
+
+.upload-preview-item {
+  position: relative;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: var(--color-surface-tint);
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-preview-item__img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
 /* --- Public Enrichment: Panduan, Timeline, FAQ, Apresiasi, Testimoni, Jadwal --- */
 .sorting-card {
   background-color: var(--color-surface);

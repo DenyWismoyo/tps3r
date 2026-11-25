@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { Upload } from 'lucide-react';
+import Image from 'next/image';
+import { Trash2, Upload } from 'lucide-react';
 import {
   PRODUCT_CATEGORY_LABELS,
   STOCK_STATUS_LABELS,
@@ -284,16 +285,26 @@ export function ProductFormModal({
             <span className="text-xs text-muted">{images.length} foto terpasang</span>
           </div>
           {images.length > 0 ? (
-            <div className="cluster">
+            <div className="upload-preview-grid">
               {images.map((url, idx) => (
-                <Button
-                  key={url}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setImages((prev) => prev.filter((_, i) => i !== idx))}
-                >
-                  Hapus Foto #{idx + 1}
-                </Button>
+                <div key={url} className="upload-preview-item">
+                  <Image
+                    src={url}
+                    alt={`Preview foto produk ${idx + 1}`}
+                    width={160}
+                    height={120}
+                    className="upload-preview-item__img"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    block
+                    onClick={() => setImages((prev) => prev.filter((_, i) => i !== idx))}
+                  >
+                    <Trash2 size={14} />
+                    <span>Hapus</span>
+                  </Button>
+                </div>
               ))}
             </div>
           ) : null}
